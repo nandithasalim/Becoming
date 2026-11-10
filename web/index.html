@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2031 — Meet who you're becoming</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script>if (/[?&]role=/.test(location.search)) document.documentElement.classList.add("back");</script>
+<style>html.back #intro{display:none}</style>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }
+</script>
+<style>
+  :root{--ink:#F4F0FF;--soft:rgba(244,240,255,.68);--line:rgba(244,240,255,.22);--paper:#F3EFE8;--pink:#1D1A24;--pmuted:#6B6573;--dusk:#4E4280;--warm:#E7A27A}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#05040C;color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+  #sky{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .grain{position:fixed;inset:-50%;pointer-events:none;opacity:.09;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    animation:grain 1.2s steps(6) infinite}
+  @keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}100%{transform:translate(0,0)}}
+  .serif{font-family:'Instrument Serif',Georgia,serif;font-weight:400}
+  .label{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--soft);margin:0}
+  .view{position:fixed;inset:0;display:flex;flex-direction:column;padding:max(28px,env(safe-area-inset-top)) 28px max(28px,env(safe-area-inset-bottom));
+    opacity:0;visibility:hidden;transition:opacity 1.2s ease,visibility 0s linear 1.2s}
+  .view.on{opacity:1;visibility:visible;transition:opacity 1.2s ease}
+  .wrap{width:100%;max-width:520px;margin:0 auto;display:flex;flex-direction:column;flex:1}
+  .top{display:flex;justify-content:space-between;align-items:center}
+  .mark{font-family:'Instrument Serif',serif;font-size:22px;letter-spacing:.02em}
+  /* intro */
+  #intro .mid{flex:1;display:flex;flex-direction:column;justify-content:center;gap:22px}
+  #intro h1{font-size:clamp(54px,15vw,92px);line-height:.92;margin:0;letter-spacing:-.01em}
+  #intro h1 i{color:#FFD9C2}
+  #intro p.sub{font-size:16px;line-height:1.6;color:var(--soft);max-width:330px;margin:0}
+  .pill{align-self:flex-start;display:inline-flex;align-items:center;gap:12px;height:52px;padding:0 22px;border-radius:999px;border:1px solid rgba(244,240,255,.4);
+    background:rgba(255,255,255,.04);color:var(--ink);font:500 15px Inter,sans-serif;cursor:pointer;backdrop-filter:blur(6px);transition:background .3s,border-color .3s}
+  .pill:hover{background:rgba(255,255,255,.1);border-color:rgba(244,240,255,.8)}
+  .pill svg{transition:transform .3s}.pill:hover svg{transform:translateX(4px)}
+  /* questions */
+  .progress{height:1px;background:var(--line);margin-top:22px;position:relative}
+  .progress span{position:absolute;left:0;top:0;height:1px;background:var(--ink);transition:width .8s cubic-bezier(.16,1,.3,1)}
+  .step{flex:1;display:none;flex-direction:column;justify-content:center;gap:28px}
+  .step.on{display:flex;animation:rise .9s cubic-bezier(.16,1,.3,1) both}
+  @keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+  .step h2{font-size:clamp(38px,10vw,56px);line-height:1;margin:0}
+  .opts{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+  .opts button{width:100%;min-height:58px;display:flex;justify-content:space-between;align-items:center;background:none;border:none;border-bottom:1px solid var(--line);
+    color:var(--ink);font:400 26px 'Instrument Serif',serif;cursor:pointer;padding:0 2px;text-align:left;transition:padding .35s ease,color .3s}
+  .opts button span{font:400 12px Inter,sans-serif;color:var(--soft);letter-spacing:.2em;opacity:0;transition:opacity .3s}
+  .opts button:hover{padding-left:12px}.opts button:hover span{opacity:1}
+  .namefield{display:flex;align-items:flex-end;gap:12px;border-bottom:1px solid rgba(244,240,255,.5)}
+  .namefield input{flex:1;background:none;border:none;outline:none;color:var(--ink);font:400 40px 'Instrument Serif',serif;padding:8px 0;min-width:0}
+  .namefield input::placeholder{color:rgba(244,240,255,.35)}
+  .namefield button{height:48px;width:48px;border-radius:24px;border:1px solid rgba(244,240,255,.5);background:none;color:var(--ink);cursor:pointer;margin-bottom:8px;flex-shrink:0}
+  .back{background:none;border:none;color:var(--soft);font:500 13px Inter,sans-serif;cursor:pointer;padding:10px 0;min-height:44px}
+  /* reveal */
+  .r{opacity:0;transform:translateY(14px);filter:blur(6px);transition:opacity 1.6s ease,transform 1.6s cubic-bezier(.16,1,.3,1),filter 1.6s ease}
+  .r.in{opacity:1;transform:none;filter:none}
+  .textbtn{background:none;border:none;color:#F4E9F2;font:500 14px Inter,sans-serif;cursor:pointer;min-height:44px;padding:0 6px;text-decoration:underline;text-underline-offset:4px}
+  .pill.dark{background:rgba(20,12,30,.75);border-color:rgba(20,12,30,.75);color:#FFF4EC}
+  .pill.dark:hover{background:rgba(20,12,30,.92)}
+  #land{position:fixed;left:0;right:0;bottom:0;height:38vh;pointer-events:none}
+  #land svg{position:absolute;inset:0;width:100%;height:100%}
+  #walker{transform:translateY(26px);opacity:0;transition:transform 3.5s cubic-bezier(.16,1,.3,1),opacity 2.5s ease}
+  #walker.up{transform:none;opacity:1}
+  .bars i{position:fixed;left:0;right:0;height:0;background:#000;z-index:5;transition:height 1.6s cubic-bezier(.65,0,.35,1);pointer-events:none}
+  .bars i:first-child{top:0}.bars i:last-child{bottom:0}
+  .bars.on i{height:10vh}
+
+  /* wide screens: figure centred, story in a column on the right */
+
+  /* ---- reveal: identical to the 3D page ---- */
+  #reveal{flex-direction:column;align-items:center;justify-content:flex-end;text-align:center;padding:32px 24px max(28px,env(safe-area-inset-bottom));pointer-events:none}
+  #reveal.on .rv-actions.in{pointer-events:auto}
+  .rv-story{width:100%;max-width:460px;font-family:Inter,system-ui,sans-serif}
+  .rv-eyebrow{font-size:12px;letter-spacing:.3em;text-transform:uppercase;font-weight:600;margin:0;color:#FF9F6B}
+  .rv-fade{opacity:0;transform:translateY(14px);filter:blur(8px);transition:opacity 1.1s ease,transform 1.1s cubic-bezier(.16,1,.3,1),filter 1.1s ease}
+  .rv-fade.in{opacity:1;transform:none;filter:none}
+  .rv-name{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(40px,10vw,62px);letter-spacing:-.03em;line-height:1;margin:10px 0 18px;color:#F3F0FF;text-shadow:0 0 40px rgba(255,159,107,.35)}
+  .rv-line{font-size:17px;line-height:1.55;color:#E6E0FF;margin:0 0 6px;min-height:26px}
+  .rv-line.strong{color:#fff;font-weight:600}
+  .caret{display:inline-block;width:2px;height:1em;background:#FF9F6B;vertical-align:-2px;margin-left:2px;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .rv-actions{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+  .rv-row{display:flex;gap:10px}
+  .rv-primary{width:100%;height:58px;border-radius:18px;border:none;background:#FF9F6B;color:#1A0E06;font:600 17px Inter,sans-serif;cursor:pointer;box-shadow:0 0 36px rgba(255,159,107,.4);transition:transform .2s,box-shadow .2s}
+  .rv-primary:hover{transform:translateY(-1px);box-shadow:0 0 50px rgba(255,159,107,.6)}
+  .rv-ghost{flex:1;height:48px;border-radius:14px;border:1px solid rgba(183,156,255,.3);background:rgba(4,2,12,.45);color:#F3F0FF;font:500 14px Inter,sans-serif;cursor:pointer}
+  .rv-ghost:hover{border-color:#FF9F6B}
+  .rv-touch{font-size:13px;color:#A49CD6;margin-top:14px}
+  .rv-scrim{position:fixed;left:0;right:0;bottom:0;height:52vh;background:linear-gradient(to top,rgba(4,2,12,.97) 34%,rgba(4,2,12,.6) 68%,rgba(4,2,12,0));pointer-events:none;opacity:0;transition:opacity 1.5s ease}
+  .rv-scrim.on{opacity:1}
+  body.side #reveal{align-items:flex-end;justify-content:center;padding-right:5vw;text-align:left}
+  body.side .rv-story{max-width:min(380px,30vw)}
+  body.side .rv-name{font-size:clamp(40px,4.4vw,62px)}
+  body.side .rv-scrim{left:auto;width:36vw;height:100vh;background:linear-gradient(to left,rgba(4,2,12,.88) 45%,rgba(4,2,12,0))}
+  /* home: calm journal */
+  #home{background:var(--paper);color:var(--pink);overflow-y:auto}
+  #home .wrap{gap:26px;padding-bottom:110px}
+  #home .label{color:var(--pmuted)}
+  #home .top .mark{color:var(--pink)}
+  .date{font-size:13px;color:var(--pmuted);margin:0}
+  #home h3{font-size:44px;line-height:1;margin:6px 0 0}
+  .note{border-top:1px solid #D9D2C6;padding-top:20px}
+  .note p{font-family:'Instrument Serif',serif;font-style:italic;font-size:25px;line-height:1.35;margin:12px 0 10px}
+  .note p.label{font-family:Inter,sans-serif;font-style:normal;font-size:11px;line-height:1.4;margin:0}
+  .note .sig{font-size:13px;color:var(--pmuted)}
+  .task{display:flex;gap:16px;align-items:flex-start;border-top:1px solid #D9D2C6;padding-top:20px}
+  .check{width:44px;height:44px;border-radius:22px;border:1.5px solid var(--pink);background:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .3s}
+  .check svg{opacity:0;transition:opacity .3s}
+  .check[aria-pressed="true"]{background:var(--pink)}.check[aria-pressed="true"] svg{opacity:1}
+  .task .t{font-family:'Instrument Serif',serif;font-size:26px;line-height:1.15;margin:6px 0 4px}
+  .task .why{font-size:14px;color:var(--pmuted);margin:0;line-height:1.5}
+  .chapter{border-top:1px solid #D9D2C6;padding-top:20px}
+  .chapter .row{display:flex;justify-content:space-between;align-items:baseline}
+  .chapter .ct{font-family:'Instrument Serif',serif;font-size:26px}
+  .days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:14px}
+  .days i{height:6px;border-radius:3px;background:#DDD6CA}.days i.f{background:var(--dusk)}
+  .ask{position:fixed;left:0;right:0;bottom:0;padding:14px 20px max(18px,env(safe-area-inset-bottom));background:linear-gradient(to top,var(--paper) 70%,rgba(243,239,232,0))}
+  .ask form{max-width:520px;margin:0 auto;display:flex;gap:10px;align-items:center;background:#FFFFFF;border:1px solid #DDD6CA;border-radius:999px;padding:6px 6px 6px 20px}
+  .ask input{flex:1;border:none;outline:none;font:400 15px Inter,sans-serif;color:var(--pink);background:none;min-width:0;height:44px}
+  .ask button{width:44px;height:44px;border-radius:22px;border:none;background:var(--pink);cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .reply{font-family:'Instrument Serif',serif;font-size:22px;line-height:1.35;margin:0;border-left:none;color:var(--pink)}
+  .replybox{display:none;border-top:1px solid #D9D2C6;padding-top:20px}
+  .replybox.on{display:block;animation:rise .8s cubic-bezier(.16,1,.3,1) both}
+  .you{font-size:14px;color:var(--pmuted);margin:0 0 10px}
+  .linkish{background:none;border:none;color:var(--dusk);font:500 14px Inter,sans-serif;cursor:pointer;padding:0;min-height:44px;text-align:left;text-decoration:underline;text-underline-offset:4px}
+
+  /* ===== minimal, professional pass (light paper for intro, questions and home) ===== */
+  :root{--ink:#16151A;--soft:#6E6A75;--line:#E2DED6;--paper:#F6F4EF;--accent:#4B43C9;--dusk:#4B43C9}
+  html,body{background:var(--paper);color:var(--ink)}
+  #sky,.grain,.bars{display:none !important}
+  .view{padding:max(32px,env(safe-area-inset-top)) 32px max(32px,env(safe-area-inset-bottom))}
+  .wrap{max-width:560px}
+  .mark{font-size:20px;color:var(--ink)}
+  .label{font-size:11px;letter-spacing:.18em;color:var(--soft)}
+  #intro h1{font-size:clamp(52px,12vw,88px);line-height:.95;color:var(--ink)}
+  #intro h1 i{color:var(--accent)}
+  #intro p.sub{color:var(--soft);font-size:17px}
+  .pill{background:var(--ink);border:none;color:#fff;backdrop-filter:none;height:54px;padding:0 26px}
+  .pill:hover{background:#000}
+  .progress{background:var(--line)}
+  .progress span{background:var(--ink)}
+  .opts{border-top:1px solid var(--line)}
+  .opts button{color:var(--ink);border-bottom:1px solid var(--line);font-size:25px}
+  .opts button:hover{padding-left:10px;color:var(--accent)}
+  .opts button span{color:var(--soft)}
+  .namefield{border-bottom:1px solid #BDB8AF}
+  .namefield input{color:var(--ink)}
+  .namefield input::placeholder{color:#B4AFB8}
+  .namefield button{border:none;background:var(--ink);color:#fff}
+  .back{color:var(--soft)}
+  .step h2{color:var(--ink)}
+
+  /* ===== all black, to match the reveal ===== */
+  :root{--ink:#F2F1F5;--soft:#9A98A3;--line:#24232B;--paper:#0B0B0E;--accent:#ABA6FF;--dusk:#ABA6FF;--pink:#F2F1F5;--pmuted:#9A98A3}
+  html,body{background:#0B0B0E;color:var(--ink)}
+  .pill,.namefield button{background:#fff;color:#0B0B0E}
+  .pill:hover{background:#E6E4EC}
+  .namefield{border-bottom-color:#3A3942}
+  .namefield input::placeholder{color:#55535C}
+  #home .note,#home .task,#home .chapter,#home .replybox{border-top-color:var(--line)}
+  .days i{background:#26252D}
+  .days i.f{background:var(--accent)}
+  .check{border-color:#5A5862}
+  .check[aria-pressed="true"]{background:var(--accent);border-color:var(--accent)}
+  .check svg{stroke:#0B0B0E}
+  .ask{background:linear-gradient(to top,#0B0B0E 70%,rgba(11,11,14,0))}
+  .ask form{background:#141419;border-color:#2A2931}
+  .ask input{color:var(--ink)}
+  .ask input::placeholder{color:#6E6C76}
+  .ask button{background:#fff}
+  .ask button svg{stroke:#0B0B0E}
+  .linkish{color:var(--accent)}
+</style>
+</head>
+<body>
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="grain"></div>
+<div class="bars" id="bars" aria-hidden="true"><i></i><i></i></div>
+
+<!-- 1 · intro -->
+<section class="view on" id="intro" aria-label="Intro">
+  <div class="wrap">
+    <div class="top"><span class="mark">2031</span><span class="label">A letter from later</span></div>
+    <div class="mid">
+      <p class="label">Somewhere ahead of you</p>
+      <h1 class="serif">You're<br><i>already</i><br>okay.</h1>
+      <p class="sub">Answer four small questions, and meet the person you're becoming.</p>
+      <button class="pill" id="go">Meet them
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- 2 · questions -->
+<section class="view" id="ask" aria-label="Questions">
+  <div class="wrap">
+    <div class="top"><button class="back" id="back">Back</button><span class="label" id="count">1 / 4</span></div>
+    <div class="progress"><span id="bar" style="width:25%"></span></div>
+
+    <form class="step on" data-k="name" id="s0">
+      <p class="label">First</p>
+      <h2 class="serif">What should they<br>call you?</h2>
+      <div class="namefield">
+        <label for="nm" class="label" style="position:absolute;left:-9999px">Your name</label>
+        <input id="nm" placeholder="Your name" maxlength="18" autocomplete="given-name">
+        <button type="submit" aria-label="Next"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
+      </div>
+    </form>
+    <div class="step" data-k="role" id="s1">
+      <p class="label">In 2031</p>
+      <h2 class="serif">What do you<br>spend your days on?</h2>
+      <ul class="opts">
+        <li><button data-v="a designer">Designing things <span>01</span></button></li>
+        <li><button data-v="a founder">Running my own company <span>02</span></button></li>
+        <li><button data-v="a doctor">Healing people <span>03</span></button></li>
+        <li><button data-v="an artist">Making art <span>04</span></button></li>
+        <li><button data-v="an engineer">Building technology <span>05</span></button></li>
+      </ul>
+    </div>
+    <div class="step" data-k="place" id="s2">
+      <p class="label">Every morning</p>
+      <h2 class="serif">Where do you<br>wake up?</h2>
+      <ul class="opts">
+        <li><button data-v="a flat in Bangalore">A flat in Bangalore <span>01</span></button></li>
+        <li><button data-v="a quiet house in Kochi">A quiet house in Kochi <span>02</span></button></li>
+        <li><button data-v="a new country">A new country <span>03</span></button></li>
+        <li><button data-v="a home by the sea">A home by the sea <span>04</span></button></li>
+      </ul>
+    </div>
+    <div class="step" data-k="feel" id="s3">
+      <p class="label">Most days</p>
+      <h2 class="serif">How do you<br>feel?</h2>
+      <ul class="opts">
+        <li><button data-v="calm">Calm <span>01</span></button></li>
+        <li><button data-v="free">Free <span>02</span></button></li>
+        <li><button data-v="proud of myself">Proud of myself <span>03</span></button></li>
+        <li><button data-v="like I finally belong">Like I belong <span>04</span></button></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 3 · reveal (same as the 3D page) -->
+<div class="rv-scrim" id="rvscrim" aria-hidden="true"></div>
+<section class="view" id="reveal" aria-label="Your future self" aria-live="polite">
+  <div class="rv-story">
+    <p class="rv-eyebrow rv-fade" id="eb">This is who you become</p>
+    <div class="rv-name rv-fade" id="who">You, 2031</div>
+    <p class="rv-line" id="l1"></p><p class="rv-line" id="l2"></p><p class="rv-line strong" id="l3"></p>
+    <div class="rv-actions rv-fade" id="acts">
+      <button class="rv-primary" id="start">Start becoming them</button>
+      <div class="rv-row"><button class="rv-ghost" id="replay">Replay</button><button class="rv-ghost" id="edit">Change my answers</button></div>
+      <p class="rv-touch">Move around. They're watching you. Tap them.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4 · home -->
+<section class="view" id="home" aria-label="Today">
+  <div class="wrap">
+    <div class="top"><span class="mark">2031</span><span class="label">Chapter I</span></div>
+    <div>
+      <p class="date" id="today"></p>
+      <h3 class="serif" id="hello">Good morning.</h3>
+    </div>
+    <div class="note">
+      <p class="label">A note from 2031</p>
+      <p id="notetext">"You don't have to become me today. You just have to do one small thing I would do."</p>
+      <span class="sig" id="sig">— you, later</span>
+    </div>
+    <div class="task">
+      <button class="check" aria-pressed="false" aria-label="Mark today's thing done" id="chk">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F3EFE8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>
+      </button>
+      <div>
+        <p class="label">Today's one thing</p>
+        <p class="t" id="task">Spend 20 minutes on it. Nothing more.</p>
+        <p class="why" id="why">Small, daily, unglamorous. That's how I got here.</p>
+      </div>
+    </div>
+    <div class="chapter">
+      <div class="row"><span class="ct">I · The Decision</span><span class="date" id="dcount">Day 1 of 7</span></div>
+      <div class="days" id="days"><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="replybox" id="rb">
+      <p class="you" id="youq"></p>
+      <p class="reply" id="reply"></p>
+    </div>
+    <button class="linkish" id="seeagain">See your future self again</button>
+  </div>
+  <div class="ask">
+    <form id="askf">
+      <label for="q" style="position:absolute;left:-9999px">Ask your future self</label>
+      <input id="q" placeholder="Ask your future self anything…" autocomplete="off">
+      <button aria-label="Send"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F3EFE8" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </form>
+  </div>
+</section>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
