@@ -1,3 +1,4 @@
+import * as api from './api.js';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -322,8 +323,55 @@ function reveal() {
   ans.name = Q.get('n') || ''; $('nm').value = ans.name;
   const r = Q.get('role'); ans.role = (/^[aeiou]/i.test(r) ? 'an ' : 'a ') + r;
   ans.place = Q.get('place') || ans.place; ans.feel = Q.get('feel') || ans.feel;
-  if (Q.has('home')) { fillHome(); show('home'); }
+  if (Q.has('home')) enterHome();
   else if (Q.has('ask')) { show('ask'); setStep(1); }
+})();
+
+// ================= accounts (Phase 1) =================
+function withArticle(r) { return /^(a|an) /.test(r) ? r : (/^[aeiou]/i.test(r) ? 'an ' : 'a ') + r; }
+function bare(r) { return r.replace(/^(a|an) /, ''); }
+
+async function enterHome() {
+  fillHome(); show('home');
+  if (!api.apiEnabled) return;
+  if (api.isSignedIn()) { await persist(); return; }
+  openSignIn();
+}
+
+async function persist() {
+  try {
+    await api.saveAnswers({ ...ans, role: bare(ans.role) });
+    $('acct').hidden = false;
+  } catch (e) {
+    if (e.status === 401) openSignIn();
+    else console.warn('Could not save answers', e);
+  }
+}
+
+function openSignIn() {
+  const sheet = $('signin'); sheet.hidden = false; requestAnimationFrame(() => sheet.classList.add('on'));
+  $('si-err').textContent = '';
+  const done = async () => { closeSignIn(); await persist(); };
+  const fail = (e) => { $('si-err').textContent = e.message || 'Sign-in failed. Try again.'; };
+  if (api.config.googleClientId) { $('si-google').hidden = false; api.googleButton($('si-google')).then(done, fail); }
+  if (api.config.devLogin) {
+    $('si-dev').hidden = false;
+    $('si-dev').onsubmit = (e) => { e.preventDefault(); api.devLogin($('si-email').value.trim(), ans.name).then(done, fail); };
+  }
+}
+function closeSignIn() { const sheet = $('signin'); sheet.classList.remove('on'); setTimeout(() => { sheet.hidden = true; }, 400); }
+$('si-later').addEventListener('click', closeSignIn);
+$('signout').addEventListener('click', () => { api.signOut(); location.href = './index.html'; });
+
+// returning user: skip straight to today
+(async () => {
+  if (!api.apiEnabled || new URLSearchParams(location.search).has('role')) return;
+  const me = await api.getMe().catch(() => null);
+  if (!me || !me.answers) return;
+  ans.name = me.answers.display_name || me.user.name || '';
+  ans.role = withArticle(me.answers.role); ans.place = me.answers.place; ans.feel = me.answers.feel;
+  document.documentElement.classList.add('back');
+  fillHome(); show('home'); $('acct').hidden = false;
 })();
 
 function fillHome() {
