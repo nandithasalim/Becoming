@@ -36,7 +36,7 @@ class FutureSelf(SQLModel, table=True):
 
     # Screen 1 · You, now (required)
     display_name: str
-    current_feeling: str = Field(index=True)   # "lost" | "stuck" | "okay" | "hopeful" | typed
+    current_feeling: str = Field(index=True)   # see questions.CURRENT_FEELING, or typed
     situation: str = Field(index=True)         # "student" | "working" | "job_hunting" | "at_home" | typed
 
     # Screen 2 · Future you (required)

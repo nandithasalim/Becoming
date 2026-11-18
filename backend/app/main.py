@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from sqlmodel import Session, select
 
 from .auth import create_token, current_user, upsert_user, verify_google_token
@@ -53,6 +54,11 @@ def apply_dream(fs: FutureSelf, dream: Dream) -> None:
     fs.would_try = dream.would_try
     fs.focus_areas = dream.focus_areas
     fs.dream_done_at = now()
+
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse("/docs")
 
 
 @app.get("/health")

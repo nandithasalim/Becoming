@@ -34,7 +34,7 @@ def login(client, email="nanditha@example.com", name="Nanditha"):
 
 
 ANSWERS = {
-    "display_name": "Nanditha", "current_feeling": "stuck", "situation": "job_hunting",
+    "display_name": "Nanditha", "current_feeling": "figuring_out", "situation": "job_hunting",
     "role": "designer", "place": "a flat in Bangalore", "feel": "calm",
     "traits": ["calm", "disciplined", "bold"], "let_go": ["overthinking"], "voice": "gentle",
 }

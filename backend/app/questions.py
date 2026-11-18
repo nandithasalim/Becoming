@@ -6,7 +6,7 @@ The web app shows the same lists, so keep them in sync with web/questions.js.
 """
 
 # Screen 1 · You, now (required)
-CURRENT_FEELING = ["lost", "stuck", "okay", "hopeful"]
+CURRENT_FEELING = ["excited", "hopeful", "figuring_out", "ready_for_change", "a_bit_lost"]  # a_bit_lost -> gentle mode + safety check
 SITUATION = ["student", "working", "job_hunting", "at_home"]
 
 # Screen 2 · Future you (required)
@@ -15,8 +15,9 @@ PLACE = ["a flat in Bangalore", "a quiet house in Kochi", "a new country", "a ho
 FEEL = ["calm", "free", "proud of myself", "like I belong"]
 
 # Screen 3 · Who they are (required)
-TRAITS = ["calm", "disciplined", "bold", "kind", "focused", "confident", "curious", "patient"]
-LET_GO = ["overthinking", "scrolling for hours", "procrastinating", "people-pleasing", "self-doubt", "comparing myself"]
+TRAITS = ["calm", "disciplined", "bold", "kind", "focused", "confident", "curious", "patient", "creative", "joyful", "proud"]
+LET_GO = ["overthinking", "scrolling for hours", "procrastinating", "people-pleasing", "self-doubt", "comparing myself",
+          "staying up too late", "waiting to feel ready"]
 VOICE = ["gentle", "coach", "wise"]  # gentle friend / tough coach / calm & wise
 
 # Screen 4 · The dream (optional)
