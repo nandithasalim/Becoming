@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#05040C">
+<title>Becoming · A message from 2031</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#F4F0FF;--soft:rgba(244,240,255,.6);--faint:rgba(244,240,255,.32);--line:rgba(244,240,255,.14);
+    --violet:#9B7BFF;--rose:#FF8FB8;--amber:#FFC48A;--me:#FFD9B0}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden}
+  body{font-family:Inter,system-ui,sans-serif;color:var(--ink);background:#05040C;-webkit-font-smoothing:antialiased;overflow:hidden}
+  button{font:inherit;color:inherit}
+  .serif{font-family:'Instrument Serif',Georgia,serif;font-weight:400}
+
+  /* ---------- space ---------- */
+  #stars{position:fixed;inset:0;width:100%;height:100%}
+  .nebula{position:fixed;inset:-20%;pointer-events:none;filter:blur(80px);opacity:.55}
+  .nebula i{position:absolute;border-radius:50%;animation:drift 26s ease-in-out infinite alternate}
+  .nebula i:nth-child(1){width:46vmax;height:46vmax;left:8%;top:4%;background:radial-gradient(circle,rgba(110,72,255,.55),transparent 65%)}
+  .nebula i:nth-child(2){width:40vmax;height:40vmax;right:6%;top:30%;background:radial-gradient(circle,rgba(255,110,170,.35),transparent 65%);animation-delay:-9s}
+  .nebula i:nth-child(3){width:38vmax;height:38vmax;left:30%;bottom:0;background:radial-gradient(circle,rgba(255,170,110,.25),transparent 65%);animation-delay:-16s}
+  @keyframes drift{to{transform:translate(6vmax,-4vmax) scale(1.15)}}
+  .grain{position:fixed;inset:0;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  body.speaking .nebula{opacity:.75;transition:opacity 1.2s}
+
+  .app{position:relative;z-index:2;height:100%;height:100dvh;max-width:760px;margin:0 auto;display:flex;flex-direction:column}
+
+  /* ---------- top: the signal ---------- */
+  header{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:12px 14px 0;padding-top:max(12px,env(safe-area-inset-top))}
+  .icon{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--soft);text-decoration:none}
+  .icon:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+  .signal{justify-self:center;display:flex;align-items:center;gap:10px;font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--soft)}
+  .signal i{width:6px;height:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{50%{opacity:.25}}
+  .track{height:1px;margin:12px 24px 0;background:var(--line);position:relative}
+  .track span{position:absolute;left:0;top:0;height:1px;width:0;background:linear-gradient(90deg,var(--violet),var(--rose),var(--amber));box-shadow:0 0 12px var(--rose);transition:width 1.2s cubic-bezier(.16,1,.3,1)}
+
+  /* ---------- the presence ---------- */
+  .presence{display:flex;flex-direction:column;align-items:center;padding:18px 0 4px;flex-shrink:0}
+  .orb{position:relative;width:88px;height:88px}
+  .orb .core{position:absolute;inset:0;border-radius:50%;
+    background:radial-gradient(circle at 36% 30%,#FFF4E8 0%,#FFC9DA 22%,#B18CFF 55%,#3A1F9E 100%);
+    box-shadow:0 0 30px rgba(177,140,255,.65),0 0 80px rgba(255,143,184,.35),inset -8px -10px 20px rgba(20,8,60,.6);
+    animation:breathe 4s ease-in-out infinite}
+  .orb .ring{position:absolute;inset:-2px;border-radius:50%;border:1px solid rgba(244,240,255,.35);opacity:0}
+  body.speaking .orb .ring{animation:ripple 2.2s cubic-bezier(.2,.6,.3,1) infinite}
+  body.speaking .orb .ring:nth-child(3){animation-delay:.7s}
+  body.speaking .orb .ring:nth-child(4){animation-delay:1.4s}
+  body.speaking .orb .core{animation:breathe 1.1s ease-in-out infinite;filter:brightness(1.18)}
+  @keyframes breathe{50%{transform:scale(1.06)}}
+  @keyframes ripple{0%{transform:scale(1);opacity:.7}100%{transform:scale(2.6);opacity:0}}
+  .who{margin-top:14px;text-align:center}
+  .who b{display:block;font-family:'Instrument Serif',serif;font-weight:400;font-size:25px;letter-spacing:.01em}
+  .wave{height:14px;display:flex;gap:3px;align-items:center;justify-content:center;margin-top:6px}
+  .wave i{width:2px;height:3px;border-radius:2px;background:var(--soft);transition:height .2s}
+  body.speaking .wave i{animation:wave .9s ease-in-out infinite;background:var(--ink)}
+  .wave i:nth-child(2){animation-delay:.1s}.wave i:nth-child(3){animation-delay:.25s}.wave i:nth-child(4){animation-delay:.05s}.wave i:nth-child(5){animation-delay:.18s}
+  @keyframes wave{50%{height:14px}}
+
+  /* ---------- the transmission ---------- */
+  .thread{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 28px;display:flex;flex-direction:column;gap:18px;scroll-behavior:smooth;
+    mask:linear-gradient(transparent 0,#000 70px,#000 calc(100% - 14px),transparent);-webkit-mask:linear-gradient(transparent 0,#000 70px,#000 calc(100% - 14px),transparent)}
+  .thread > *{flex-shrink:0}
+  .thread::before,.thread::after{content:'';flex:0 0 45vh}   /* room so any line can sit in the middle */
+  .thread::-webkit-scrollbar{width:0}
+  .line{transition:opacity 1.2s ease,filter 1.2s ease}
+  .line.past{opacity:.3}
+  .them{align-self:center;text-align:center;font-family:'Instrument Serif',Georgia,serif;font-size:clamp(30px,5vw,42px);line-height:1.2;max-width:680px;color:var(--ink);text-shadow:0 0 24px rgba(177,140,255,.25)}
+  .them.big{font-size:clamp(42px,8vw,64px);line-height:1.08;font-style:italic;color:#FFE7EF;
+    text-shadow:0 0 18px rgba(255,143,184,.55),0 0 50px rgba(255,196,138,.3)}
+  .them .w{display:inline-block;white-space:pre;opacity:0;filter:blur(10px);transform:translateY(8px);animation:materialise .9s cubic-bezier(.16,1,.3,1) forwards}
+  @keyframes materialise{to{opacity:1;filter:blur(0);transform:none}}
+  .me{align-self:center;text-align:center;max-width:80%;font-size:19px;line-height:1.45;color:var(--me);animation:send .6s cubic-bezier(.16,1,.3,1) both}
+  .me small{display:block;font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
+  @keyframes send{from{opacity:0;transform:translateY(14px)}}
+  .care{color:#FFD9B0;text-shadow:0 0 22px rgba(255,196,138,.35)}
+  .stamp{align-self:center;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--faint);margin:0}
+  .mark{align-self:center;display:flex;align-items:center;gap:14px;width:100%;margin:10px 0}
+  .mark::before,.mark::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent)}
+  .mark span{font-family:'Instrument Serif',serif;font-style:italic;font-size:20px;color:var(--amber)}
+
+  /* ---------- "It's 2031." full screen ---------- */
+  .title{position:fixed;inset:0;z-index:10;display:grid;place-items:center;text-align:center;background:radial-gradient(circle at 50% 50%,rgba(40,20,90,.9),#05040C 70%);
+    opacity:0;pointer-events:none;transition:opacity 1s ease}
+  .title.on{opacity:1}
+  .title p{margin:0;font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--soft)}
+  .title h2{margin:14px 0 0;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(64px,15vw,150px);line-height:.95;letter-spacing:-.01em;
+    background:linear-gradient(100deg,#fff 0%,#FFD6E6 40%,#FFC48A 70%,#fff 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+  .title.on h2{animation:sweep 2.6s ease forwards,rise 1.6s cubic-bezier(.16,1,.3,1) both}
+  @keyframes sweep{from{background-position:100% 0}to{background-position:0 0}}
+  @keyframes rise{from{opacity:0;letter-spacing:.12em;filter:blur(14px)}}
+
+  /* ---------- your side ---------- */
+  .composer{position:relative;padding:8px 22px 16px;padding-bottom:max(18px,env(safe-area-inset-bottom));transition:opacity .5s}
+  .composer.off{opacity:0;pointer-events:none}
+  .composer[hidden]{display:none}
+  .hint{text-align:center;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--faint);margin:0 0 12px;min-height:14px}
+  .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin-bottom:14px}
+  .chips:empty{display:none}
+  .chip{min-height:52px;padding:0 24px;font-size:16.5px !important;border-radius:999px;border:1px solid rgba(244,240,255,.18);background:rgba(255,255,255,.04);backdrop-filter:blur(10px);
+    color:var(--ink);font-size:15px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:8px;
+    transition:border-color .25s,background .25s,box-shadow .25s,transform .2s;opacity:0;animation:chipIn .6s cubic-bezier(.16,1,.3,1) forwards}
+  @keyframes chipIn{from{opacity:0;transform:translateY(10px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+  .chip:hover{border-color:rgba(244,240,255,.5);background:rgba(255,255,255,.08);box-shadow:0 0 24px rgba(177,140,255,.3)}
+  .chip:active{transform:scale(.96)}
+  .chip::before{content:'';width:6px;height:6px;border-radius:50%;background:rgba(244,240,255,.5);transition:background .25s,box-shadow .25s}
+  .chip[aria-pressed=true]{border-color:var(--amber);background:rgba(255,196,138,.12);box-shadow:0 0 26px rgba(255,196,138,.28)}
+  .chip[aria-pressed=true]::before{background:var(--amber);box-shadow:0 0 10px var(--amber)}
+  .chip.last::after{content:'before';font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .chip.quiet{border-style:dashed;color:var(--soft)}
+  .chip.quiet::before{display:none}
+  .row{display:flex;align-items:flex-end;gap:12px;max-width:560px;margin:0 auto}
+  .field{flex:1;border-bottom:1px solid var(--line);transition:border-color .3s}
+  .field:focus-within{border-color:rgba(244,240,255,.6)}
+  .field textarea{width:100%;border:none;outline:none;background:none;resize:none;font:400 23px/1.35 'Instrument Serif',Georgia,serif;color:var(--ink);padding:10px 2px;max-height:120px}
+  .field textarea::placeholder{color:var(--faint);font-style:italic}
+  .send{width:54px;height:54px;border-radius:50%;border:1px solid rgba(244,240,255,.3);background:rgba(255,255,255,.06);cursor:pointer;display:grid;place-items:center;color:var(--ink);flex-shrink:0;transition:all .25s}
+  .send:not(:disabled):hover{background:var(--ink);color:#05040C;box-shadow:0 0 30px rgba(244,240,255,.45)}
+  .send:disabled{opacity:.25;cursor:default}
+  .row.notype .field{visibility:hidden}
+
+  /* ---------- the end ---------- */
+  .finale{align-self:center;margin:26px 0 10px;opacity:0;animation:chipIn 1.2s .3s cubic-bezier(.16,1,.3,1) forwards}
+  .finale button{position:relative;min-height:60px;padding:0 36px;border-radius:999px;border:1px solid rgba(244,240,255,.4);cursor:pointer;
+    background:rgba(255,255,255,.08);backdrop-filter:blur(10px);color:var(--ink);font:500 16px Inter,sans-serif;letter-spacing:.04em;display:inline-flex;align-items:center;gap:12px;
+    box-shadow:0 0 40px rgba(177,140,255,.35);animation:call 2.4s ease-in-out infinite}
+  @keyframes call{50%{box-shadow:0 0 70px rgba(255,143,184,.5)}}
+  .finale button:hover{background:var(--ink);color:#05040C}
+  .flash{position:fixed;left:50%;top:120px;width:20px;height:20px;margin:-10px;border-radius:50%;z-index:20;pointer-events:none;
+    background:radial-gradient(circle,#fff 0%,#FFE3EE 40%,rgba(255,196,138,0) 70%);transform:scale(0)}
+  .flash.go{animation:burst 1.4s cubic-bezier(.7,0,.3,1) forwards}
+  @keyframes burst{60%{transform:scale(140);opacity:1}100%{transform:scale(160);opacity:1}}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+  @media (max-width:600px){
+    .presence{padding-top:10px}.orb{width:70px;height:70px}.who{margin-top:10px}.who b{font-size:22px}
+    .thread{padding:0 20px;gap:16px}
+    .composer{padding:6px 14px 14px}
+    .chip{min-height:48px;padding:0 18px;font-size:15.5px !important}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-delay:0s!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="stars" aria-hidden="true"></canvas>
+<div class="nebula" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="grain" aria-hidden="true"></div>
+
+<div class="app">
+  <header>
+    <a class="icon" href="./index.html" aria-label="Back to start">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+    </a>
+    <div class="signal"><i></i><span id="status">Incoming · 2031</span></div>
+    <span></span>
+  </header>
+
+  <div class="presence" aria-hidden="true">
+    <div class="orb"><div class="core"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>
+    <div class="who"><b>You, 2031</b></div>
+    <div class="wave"><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+
+  <main class="thread" id="thread" aria-live="polite"></main>
+
+  <form class="composer off" id="composer" autocomplete="off">
+    <p class="hint" id="hint"></p>
+    <div class="chips" id="chips"></div>
+    <div class="row" id="row">
+      <label class="field"><span class="sr">Your reply</span>
+        <textarea id="input" rows="1" placeholder="Say it in your own words…" disabled></textarea>
+      </label>
+      <button class="send" id="send" type="submit" aria-label="Send" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </form>
+</div>
+
+<div class="title" id="title" aria-hidden="true"><div><p>Five years from now</p><h2>It's 2031.</h2></div></div>
+<div class="flash" id="flash" aria-hidden="true"></div>
+
+<script type="module">
+import { Q, QS, labelOf, clean, joinAnd, previousAnswers, goReveal, wait, reduceMotion, MAX_TEXT } from './flow.js';
+
+const $ = (id) => document.getElementById(id);
+const thread = $('thread'), chips = $('chips'), input = $('input'), send = $('send'), hint = $('hint'), composer = $('composer');
+const prev = previousAnswers();
+const A = {};
+const MAIN = QS.filter((q) => !q.optional).length;
+let answered = 0;
+
+// ---------- stars drifting slowly toward you ----------
+(() => {
+  const c = $('stars'), g = c.getContext('2d');
+  let W, H, S = [];
+  const size = () => { const d = Math.min(devicePixelRatio || 1, 2); W = c.width = innerWidth * d; H = c.height = innerHeight * d;
+    S = Array.from({ length: Math.round((innerWidth * innerHeight) / 5000) }, () => ({ x: Math.random() * W, y: Math.random() * H, z: Math.random(), t: Math.random() * 6 })); };
+  size(); addEventListener('resize', size);
+  let last = performance.now();
+  const tick = (now) => {
+    const dt = Math.min(50, now - last); last = now;
+    const fast = document.body.classList.contains('speaking') ? 2.2 : 1;
+    g.clearRect(0, 0, W, H);
+    for (const s of S) {
+      if (!reduceMotion) { s.y -= (0.006 + s.z * 0.02) * dt * fast; s.t += dt / 900; if (s.y < 0) { s.y = H; s.x = Math.random() * W; } }
+      const a = (0.25 + s.z * 0.6) * (0.65 + 0.35 * Math.sin(s.t));
+      g.fillStyle = `rgba(244,240,255,${a})`;
+      g.beginPath(); g.arc(s.x, s.y, (0.4 + s.z * 1.1) * (devicePixelRatio || 1), 0, 6.283); g.fill();
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+})();
+
+// ---------- the transmission ----------
+// keep the newest line in the middle of the screen (older lines drift up and fade)
+let focusEl = null;
+const centerOn = (el, smooth = true) => { if (el) focusEl = el; const f = focusEl; if (!f) return;
+  requestAnimationFrame(() => { const fr = f.getBoundingClientRect(), tr = thread.getBoundingClientRect();
+    thread.scrollTo({ top: thread.scrollTop + (fr.top - tr.top) + fr.height / 2 - thread.clientHeight / 2, behavior: smooth && !reduceMotion ? 'smooth' : 'auto' }); }); };
+const scrollDown = () => centerOn(thread.lastElementChild);
+new ResizeObserver(() => centerOn(null, false)).observe(thread);
+const dimAll = () => thread.querySelectorAll('.line').forEach((l) => l.classList.add('past'));
+
+function stamp(text) { const s = document.createElement('p'); s.className = 'stamp'; s.textContent = text; thread.appendChild(s); }
+
+// future you speaks: the orb wakes, then the words come out of the light one by one
+async function say(text, cls = '') {
+  document.body.classList.add('speaking'); $('status').textContent = 'Transmitting';
+  await wait(reduceMotion ? 100 : Math.min(1300, 450 + text.length * 9));
+  dimAll();
+  const el = document.createElement('p');
+  el.className = `line them ${cls}`;
+  const words = text.split(/(\s+)/);
+  const step = reduceMotion ? 0 : 70;
+  let i = 0;
+  for (const w of words) {
+    if (/^\s+$/.test(w)) { el.appendChild(document.createTextNode(w)); continue; }
+    const s = document.createElement('span'); s.className = 'w'; s.textContent = w; s.style.animationDelay = (i++ * step) + 'ms';
+    el.appendChild(s);
+  }
+  el.setAttribute('aria-label', text);
+  thread.appendChild(el); scrollDown();
+  await wait(reduceMotion ? 80 : i * step + 650);
+  document.body.classList.remove('speaking'); $('status').textContent = 'Incoming · 2031';
+  await wait(reduceMotion ? 40 : 250);
+}
+
+function mine(text) {
+  const el = document.createElement('p'); el.className = 'line me';
+  el.innerHTML = '<small>You · 2026</small>';
+  el.appendChild(document.createTextNode(text));
+  thread.appendChild(el); centerOn(null);  // the question stays in the middle; your reply sits just under it
+  navigator.vibrate?.(8);
+}
+
+// the big moment before the future questions
+async function era() {
+  const t = $('title');
+  t.classList.add('on'); navigator.vibrate?.([10, 60, 10]);
+  await wait(reduceMotion ? 900 : 2600);
+  t.classList.remove('on');
+  dimAll();
+  const m = document.createElement('div'); m.className = 'mark'; m.innerHTML = '<span>2031</span>';
+  thread.appendChild(m); scrollDown();
+  await wait(700);
+}
+
+function progress() {}
+function fit() { input.style.height = 'auto'; input.style.height = Math.min(110, input.scrollHeight) + 'px'; }
+function stagger() { [...chips.children].forEach((c, i) => { c.style.animationDelay = (i * 60) + 'ms'; }); }
+
+// ---------- asking ----------
+function ask(k, { replies, placeholder } = {}) {
+  const q = Q[k];
+  return new Promise((resolve) => {
+    const picked = new Set();
+    const before = prev[k];
+    const allowTyping = q.type === 'text' || q.type === 'long' || q.custom !== false;
+    chips.innerHTML = '';
+    input.value = '';
+    input.disabled = !allowTyping;
+    $('row').classList.toggle('notype', !allowTyping && q.type !== 'many');
+    input.placeholder = placeholder || (q.type === 'text' ? (q.placeholder || 'Type here') : q.type === 'long' ? (q.placeholder || 'Type here') : 'Or say it in your own words…');
+    input.maxLength = q.max || MAX_TEXT;
+
+    for (const [v, label] of (replies || q.opts || [])) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.dataset.v = v; b.textContent = label;
+      if (q.type === 'many') b.setAttribute('aria-pressed', 'false');
+      if (Array.isArray(before) ? before.includes(v) : before === v) b.classList.add('last');
+      chips.appendChild(b);
+    }
+    if (q.type === 'long') {
+      const s = document.createElement('button'); s.type = 'button'; s.className = 'chip quiet'; s.dataset.v = '__skip'; s.textContent = 'Skip this one';
+      chips.appendChild(s);
+    }
+    stagger();
+    if (q.type === 'text' && before) input.value = before;
+
+    const typed = () => clean(input.value, q.max || MAX_TEXT);
+    const count = () => picked.size + (typed() ? 1 : 0);
+    function check() {
+      let ok = false, h = '';
+      if (q.type === 'many') {
+        const n = count();
+        if (q.exact) { ok = n === q.exact; h = n < q.exact ? `Choose ${q.exact - n} more` : n > q.exact ? `Only ${q.exact}` : 'Send it'; }
+        else { ok = n >= (q.min || 1) && n <= (q.max || 99); h = n > (q.max || 99) ? `Up to ${q.max}` : n ? 'Send when ready' : `Choose a few${q.max ? `, up to ${q.max}` : ''}`; }
+      } else if (q.type === 'one') { ok = !!typed(); h = 'Answer'; }
+      else { ok = !!typed(); h = ''; }
+      send.disabled = !ok; hint.textContent = h;
+    }
+    function done(value, shown) {
+      composer.classList.add('off'); input.disabled = true; send.disabled = true; hint.textContent = '';
+      input.value = ''; fit();
+      composer.onsubmit = null; chips.onclick = null; input.oninput = null; input.onkeydown = null;
+      setTimeout(() => { chips.innerHTML = ''; }, 400);
+      if (shown) mine(shown);
+      resolve(value);
+    }
+
+    chips.onclick = (e) => {
+      const b = e.target.closest('.chip'); if (!b) return;
+      const v = b.dataset.v;
+      if (v === '__skip') return done('', 'Not yet.');
+      if (q.type === 'many') {
+        picked.has(v) ? picked.delete(v) : picked.add(v);
+        b.setAttribute('aria-pressed', String(picked.has(v)));
+        check(); return;
+      }
+      done(v, b.textContent.trim());
+    };
+    input.oninput = () => { fit(); check(); };
+    input.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!send.disabled) composer.requestSubmit(); } };
+    composer.onsubmit = (e) => {
+      e.preventDefault(); if (send.disabled) return;
+      if (q.type === 'many') { const vals = [...picked]; if (typed()) vals.push(typed()); return done(vals, joinAnd(vals.map((v) => labelOf(k, v)))); }
+      done(typed(), typed());
+    };
+
+    composer.classList.remove('off');
+    check();
+    if (allowTyping && (q.type === 'text' || q.type === 'long')) setTimeout(() => input.focus({ preventScroll: true }), 50);
+    scrollDown();
+  });
+}
+
+function choose(replies) {
+  return new Promise((resolve) => {
+    chips.innerHTML = ''; input.disabled = true; send.disabled = true; hint.textContent = '';
+    $('row').classList.add('notype');
+    for (const [v, label] of replies) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (v === 'no' ? ' quiet' : ''); b.dataset.v = v; b.textContent = label;
+      chips.appendChild(b);
+    }
+    stagger();
+    chips.onclick = (e) => {
+      const b = e.target.closest('.chip'); if (!b) return;
+      chips.onclick = null; composer.classList.add('off'); setTimeout(() => { chips.innerHTML = ''; }, 400);
+      mine(b.textContent); resolve(b.dataset.v);
+    };
+    composer.classList.remove('off'); scrollDown();
+  });
+}
+
+// first safety net (the real check comes in Phase 4, on the server)
+const HURT = /(suicid|kill myself|end (it|my life)|self[- ]?harm|hurt myself|don'?t want to (live|be here)|no reason to live)/i;
+async function careIfNeeded(text) {
+  if (!HURT.test(text || '')) return;
+  await say("I'm really glad you told me. You don't have to carry this alone.", 'care');
+  await say('If you might hurt yourself, please talk to someone now. In India you can call Tele-MANAS on 14416, any time, free.', 'care');
+}
+
+const REACT = {
+  situation: { student: 'Studying. I remember the late nights.', working: "Working. You're carrying more than people see.",
+    job_hunting: "Looking for work. I remember those days. They don't last. I promise.", at_home: 'Home, looking after everyone. That is real work.' },
+  current_feeling: { excited: 'I love that. Hold on to it.', hopeful: 'Good. You were right to be.',
+    figuring_out: "That's okay. Nobody has it all figured out. Not even me.", ready_for_change: "Then you're exactly where you need to be.",
+    a_bit_lost: "Thank you for being honest with me. It's been hard, and you're still here. That matters." },
+  voice: { gentle: "Then I'll be gentle. Always on your side.", coach: "Then I won't go easy on you. You'll thank me later.", wise: "Then I'll keep it short, and true." },
+};
+const lower = (s) => s.charAt(0).toLowerCase() + s.slice(1);
+
+// ---------- the conversation ----------
+async function run() {
+  stamp('Signal received · ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }));
+  await wait(900);
+  await say('Are you there?', 'big');
+  await choose([['yes', "I'm here"], ['who', 'Who is this?']]);
+  await say("It's me. You, five years from now.");
+  await say("I don't have long. Let me ask you a few things.");
+
+  await say('What are your days like right now?');
+  A.situation = await ask('situation'); answered++; progress();
+  await careIfNeeded(A.situation);
+  await say(REACT.situation[A.situation] || 'I remember. Thank you for telling me.');
+
+  await say('And honestly, how does life feel lately?');
+  A.current_feeling = await ask('current_feeling'); answered++; progress();
+  await careIfNeeded(A.current_feeling);
+  await say(REACT.current_feeling[A.current_feeling] || 'Thank you for telling me how it really is.');
+  if (A.current_feeling === 'a_bit_lost') await say("We'll go slowly. No pressure.");
+
+  await say("I know your name. But type it for me. I need to know it's really you.");
+  A.display_name = await ask('display_name'); answered++; progress();
+  await say(`${A.display_name}.`, 'big');
+  await say("It's really you.");
+
+  await say("Now let me show you where I am.");
+  await era();
+  await say('Guess what I spend my days on now?', 'big');
+  A.role = await ask('role'); answered++; progress();
+  await say(`${labelOf('role', A.role)}. Every single day.`);
+
+  await say('And where do you think I wake up?');
+  A.place = await ask('place'); answered++; progress();
+  await say(`${labelOf('place', A.place)}. You'd love the mornings here.`);
+
+  await say('How do I feel, most days?');
+  A.feel = await ask('feel'); answered++; progress();
+  await say(`${labelOf('feel', A.feel)}. Most days, really.`);
+
+  await say("People say I've changed since your time.");
+  await say('Choose 3 words they use for me.');
+  A.traits = await ask('traits'); answered++; progress();
+  await say(`${joinAnd(A.traits.map((v, i) => (i ? lower(labelOf('traits', v)) : labelOf('traits', v))))}. That's us.`);
+
+  await say('There are things I finally left behind. Which ones?');
+  A.let_go = await ask('let_go'); answered++; progress();
+  await say(`I stopped ${joinAnd(A.let_go.map((v) => lower(labelOf('let_go', v))))}. It took time. But it happened.`);
+
+  await say('One more. How do you want me to talk to you?');
+  A.voice = await ask('voice'); answered++; progress();
+  await say(REACT.voice[A.voice]);
+
+  await say('The signal is holding. Can I ask three more things?');
+  const more = await choose([['yes', 'Ask me'], ['no', 'Maybe later']]);
+  A.dream_done = more === 'yes';
+  if (A.dream_done) {
+    await say('What did you love doing as a kid?');
+    A.loved_as_kid = await ask('loved_as_kid');
+    await say('I still do some of that, you know.');
+    await say('If no one judged you, what would you try?');
+    A.would_try = await ask('would_try');
+    await careIfNeeded(A.would_try);
+    await say(A.would_try ? 'Write that down somewhere. I mean it.' : 'Ask me again some day.');
+    await say('And what matters most to you right now?');
+    A.focus_areas = await ask('focus_areas');
+    await say("Then that's where we begin.");
+  } else {
+    await say("That's okay. We have time.");
+  }
+
+  await say(`${A.display_name}, listen.`);
+  await say("I've waited five years to show you who you become.", 'big');
+  composer.hidden = true;
+  const f = document.createElement('div'); f.className = 'finale';
+  f.innerHTML = `<button type="button" id="meet">Meet me
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>`;
+  thread.appendChild(f); scrollDown();
+  $('meet').onclick = async () => {
+    const o = document.querySelector('.orb').getBoundingClientRect();
+    const fl = $('flash'); fl.style.top = (o.top + o.height / 2) + 'px';
+    document.body.classList.add('speaking'); fl.classList.add('go'); navigator.vibrate?.(30);
+    await wait(reduceMotion ? 200 : 1250);
+    goReveal(A, 'chat');
+  };
+}
+run();
+</script>
+</body>
+</html>

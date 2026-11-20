@@ -7,8 +7,23 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<script>if (/[?&]role=/.test(location.search)) document.documentElement.classList.add("back");</script>
-<style>html.back #intro{display:none}</style>
+<script>
+  if (/[?&]role=/.test(location.search)) document.documentElement.classList.add("back");
+  // "edit my answers" from the reveal goes back to the chat or letter it came from
+  { const q = new URLSearchParams(location.search), f = q.get("from");
+    if (q.has("ask") && (f === "chat" || f === "letter")) { q.delete("ask"); location.replace("./" + f + ".html?" + q.toString()); } }
+</script>
+<style>html.back #intro{display:none}  .modes{display:grid;gap:10px;width:100%;max-width:380px;margin-top:6px}
+  .mode{display:flex;align-items:center;gap:14px;min-height:68px;padding:12px 18px;border-radius:18px;text-decoration:none;color:var(--ink);
+    border:1px solid var(--line);background:rgba(255,255,255,.05);backdrop-filter:blur(8px);transition:background .25s,border-color .25s,transform .25s}
+  .mode:hover{background:rgba(255,255,255,.1);border-color:rgba(244,240,255,.45);transform:translateY(-2px)}
+  .mode b{display:block;font-weight:500;font-size:16px}
+  .mode small{display:block;font-size:13px;color:var(--soft);margin-top:2px}
+  .mode-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.08);flex-shrink:0}
+  .pill[hidden]{display:none}
+</style>
+<link rel="stylesheet" href="./ui-themes.css">
+<script>{ const u = new URLSearchParams(location.search).get("ui"); if (u) document.documentElement.dataset.ui = u; }</script>
 <script type="importmap">
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }
 </script>
@@ -96,6 +111,107 @@
   body.side .rv-story{max-width:min(380px,30vw)}
   body.side .rv-name{font-size:clamp(40px,4.4vw,62px)}
   body.side .rv-scrim{left:auto;width:36vw;height:100vh;background:linear-gradient(to left,rgba(4,2,12,.88) 45%,rgba(4,2,12,0))}
+
+  /* ===== questions: 4 screens, 3 per screen ===== */
+  #ask{overflow-y:auto}
+  .qwrap{flex:none;min-height:100%}
+  #qform{display:flex;flex-direction:column;flex:1;padding-bottom:12px}
+  .screen{display:none;flex-direction:column;gap:30px;padding-top:34px}
+  .screen.on{display:flex;animation:rise .7s cubic-bezier(.16,1,.3,1) both}
+  .screen h2{font-size:clamp(38px,9vw,52px);line-height:1;margin:0;color:var(--ink)}
+  .screen .ssub{color:var(--soft);font-size:15px;margin:10px 0 0}
+  .q{border:none;margin:0;padding:0;min-width:0}
+  .q legend,.q > label{display:block;padding:0;font:500 16px Inter,sans-serif;color:var(--ink);margin-bottom:12px}
+  .q .qcount{color:var(--soft);font-weight:400;font-size:13px;margin-left:6px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{min-height:44px;padding:0 16px;border-radius:999px;border:1px solid #2E2D35;background:transparent;color:var(--ink);font:500 14px Inter,sans-serif;cursor:pointer;transition:background .2s,border-color .2s,color .2s}
+  .chip:hover{border-color:#57555F}
+  .chip[aria-pressed="true"]{background:#fff;border-color:#fff;color:#0B0B0E}
+  .chip.other{border-style:dashed;color:var(--soft)}
+  .chip.other[aria-pressed="true"]{background:transparent;border:1px solid var(--accent);color:var(--accent)}
+  .otherin,.qtext,.qlong{width:100%;margin-top:10px;background:#141419;border:1px solid #2A2931;border-radius:14px;color:var(--ink);font:400 15px Inter,sans-serif;padding:13px 16px;outline:none}
+  .otherin:focus,.qtext:focus,.qlong:focus{border-color:var(--accent)}
+  .qtext{margin-top:0;font:400 26px 'Instrument Serif',serif;padding:10px 16px}
+  .qlong{min-height:84px;resize:vertical;margin-top:0}
+  .otherin::placeholder,.qtext::placeholder,.qlong::placeholder{color:#5E5C66}
+  .qfoot{margin-top:auto;padding-top:34px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+  .qhint{color:var(--soft);font-size:13px;min-height:18px;margin:0}
+  .pill:disabled{opacity:.35;cursor:not-allowed}
+  .qskip{background:none;border:none;color:var(--soft);font:500 14px Inter,sans-serif;cursor:pointer;min-height:44px;padding:0;text-decoration:underline;text-underline-offset:4px}
+
+  /* ===== questions v2: cards, segmented progress, motion ===== */
+  #ask{--gx:15%}
+  .askglow{position:fixed;inset:0;pointer-events:none;background:radial-gradient(600px 420px at var(--gx) 8%, rgba(171,166,255,.10), transparent 70%);transition:background-position 1s ease}
+  .qwrap{position:relative}
+  .segs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:18px}
+  .segs i{height:3px;border-radius:2px;background:#24232B;overflow:hidden;position:relative}
+  .segs i::after{content:'';position:absolute;inset:0;background:#fff;transform:scaleX(0);transform-origin:left;transition:transform .6s cubic-bezier(.16,1,.3,1)}
+  .segs i.done::after{transform:scaleX(1)}
+  .segs i.now::after{transform:scaleX(.5);background:var(--accent)}
+  .screen{padding-top:40px;gap:34px}
+  .screen.solo{gap:28px}
+  .screen.solo h2{font-size:clamp(34px,7.5vw,50px);line-height:1.05;margin-top:12px;max-width:520px}
+  #screens[data-dir="fwd"] .screen.on{animation:slideIn .55s cubic-bezier(.16,1,.3,1) both}
+  #screens[data-dir="back"] .screen.on{animation:slideBack .55s cubic-bezier(.16,1,.3,1) both}
+  @keyframes slideIn{from{opacity:0;transform:translateX(36px)}to{opacity:1;transform:none}}
+  @keyframes slideBack{from{opacity:0;transform:translateX(-36px)}to{opacity:1;transform:none}}
+  .screen.on .card,.screen.on .chip{animation:pop .5s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--i,0) * 35ms + 120ms)}
+  @keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  @media (max-width:420px){.cards{grid-template-columns:1fr}}
+  .card{position:relative;text-align:left;display:flex;flex-direction:column;gap:4px;min-height:64px;padding:14px 44px 14px 16px;border-radius:16px;border:1px solid #26252D;background:#121217;color:var(--ink);cursor:pointer;
+    transition:border-color .25s, background .25s, transform .2s}
+  .card:hover{border-color:#47454F;transform:translateY(-1px)}
+  .card:active{transform:scale(.98)}
+  .card .ct{font:500 15px Inter,sans-serif}
+  .card .cd{font:400 13px Inter,sans-serif;color:var(--soft);line-height:1.35}
+  .card .tick{position:absolute;right:14px;top:16px;width:20px;height:20px;border-radius:10px;border:1.5px solid #3A3942;transition:all .25s}
+  .card[aria-pressed="true"]{border-color:#fff;background:#18181F}
+  .card[aria-pressed="true"] .tick{background:#fff;border-color:#fff;box-shadow:inset 0 0 0 4px #18181F}
+  .card.other{border-style:dashed;background:transparent}
+  .card.other .ct{color:var(--soft)}
+  .card.other[aria-pressed="true"]{border:1px solid var(--accent)}
+  .card.other[aria-pressed="true"] .ct{color:var(--accent)}
+  .chip{transition:background .2s,border-color .2s,color .2s,transform .15s}
+  .chip:active{transform:scale(.96)}
+  .solo .chips{gap:10px}
+  .solo .chip{min-height:48px;padding:0 20px;font-size:15px}
+  .qcount{color:var(--accent)}
+  .q legend,.q > label{font-size:15px;color:var(--soft);font-weight:500}
+
+  /* ===== questions v3: one question per screen ===== */
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  #ask .qwrap{max-width:640px;min-height:100%;display:flex;flex-direction:column}
+  #qform{flex:1;display:flex;flex-direction:column}
+  #screens{flex:1;display:flex;flex-direction:column;justify-content:center;padding:4vh 0 2vh}
+  .screen,.screen.solo{padding-top:0;gap:30px}
+  .qhead .label{color:var(--accent)}
+  .screen.solo h2{font-size:clamp(36px,6.4vw,56px);line-height:1.04;margin:14px 0 0;letter-spacing:-.01em}
+  .qhead .ssub{margin-top:12px}
+  .segs i{height:4px;border-radius:3px;background:#22212A}
+  .segs i::after{transform:scaleX(var(--f,0));background:#fff;transition:transform .7s cubic-bezier(.16,1,.3,1)}
+  .segs i.now::after{background:var(--accent)}
+  #count{letter-spacing:.08em}
+  .card{min-height:72px;padding:16px 48px 16px 18px;border-radius:18px}
+  .card .ct{font-size:16px}
+  .card kbd{display:none;position:absolute;right:44px;top:17px;font:500 11px Inter,sans-serif;color:#5E5C66;border:1px solid #2E2D35;border-radius:5px;padding:1px 5px}
+  @media (hover:hover) and (min-width:700px){.card kbd{display:block}}
+  .card[aria-pressed="true"] kbd{color:var(--soft);border-color:#47454F}
+  .solo .chip{min-height:50px;padding:0 22px;font-size:15px}
+  .qtext{font-size:clamp(30px,6vw,42px);padding:14px 4px;background:transparent;border:none;border-bottom:1px solid #3A3942;border-radius:0}
+  .qtext:focus{border-bottom-color:var(--accent)}
+  .qlong{font-size:17px;min-height:120px;padding:16px 18px;border-radius:18px}
+  .qfoot{position:sticky;bottom:0;margin-top:0;padding:18px 0 max(18px,env(safe-area-inset-bottom));flex-direction:row;align-items:center;justify-content:flex-end;gap:16px;
+    background:linear-gradient(to top,#0B0B0E 65%,rgba(11,11,14,0))}
+  .qfoot .qhint{margin-right:auto;flex:1}
+  .qfoot .qskip{order:0}
+  .qfoot .pill{order:1}
+  @media (max-width:520px){.qfoot{flex-wrap:wrap}.qfoot .qhint{flex-basis:100%}.qfoot .pill{flex:1;justify-content:center}}
+
+  /* "It's 2031." above the future questions */
+  .kicker{margin:14px 0 -6px;font-size:clamp(44px,8vw,72px);line-height:1;font-style:italic;letter-spacing:-.01em;
+    background:linear-gradient(90deg,#CFCBFF,#ABA6FF 55%,#E7C6FF);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .kicker + h2{margin-top:8px !important}
   /* home: calm journal */
   #home{background:var(--paper);color:var(--pink);overflow-y:auto}
   #home .wrap{gap:26px;padding-bottom:110px}
@@ -206,60 +322,40 @@
     <div class="mid">
       <p class="label">Somewhere ahead of you</p>
       <h1 class="serif">You're<br><i>already</i><br>okay.</h1>
-      <p class="sub">Answer four small questions, and meet the person you're becoming.</p>
-      <button class="pill" id="go">Meet them
+      <p class="sub">Answer a few small questions, and meet the person you're becoming. How would you like to begin?</p>
+      <div class="modes">
+        <a class="mode" href="./chat.html">
+          <span class="mode-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg></span>
+          <span><b>Chat with future you</b><small>They text, you reply</small></span>
+        </a>
+        <a class="mode" href="./letter.html">
+          <span class="mode-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v12H3z"/><path d="M3 7l9 6 9-6"/></svg></span>
+          <span><b>Write a letter together</b><small>Fill in the blanks</small></span>
+        </a>
+      </div>
+      <button class="pill" id="go" hidden>Meet them
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
       </button>
     </div>
   </div>
 </section>
 
-<!-- 2 · questions -->
+<!-- 2 · questions: 4 screens, 3 questions each (built by app.js from questions.js) -->
 <section class="view" id="ask" aria-label="Questions">
-  <div class="wrap">
-    <div class="top"><button class="back" id="back">Back</button><span class="label" id="count">1 / 4</span></div>
-    <div class="progress"><span id="bar" style="width:25%"></span></div>
-
-    <form class="step on" data-k="name" id="s0">
-      <p class="label">First</p>
-      <h2 class="serif">What should they<br>call you?</h2>
-      <div class="namefield">
-        <label for="nm" class="label" style="position:absolute;left:-9999px">Your name</label>
-        <input id="nm" placeholder="Your name" maxlength="18" autocomplete="given-name">
-        <button type="submit" aria-label="Next"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
+  <div class="askglow" aria-hidden="true"></div>
+  <div class="wrap qwrap">
+    <div class="top"><button class="back" id="back" type="button">Back</button><span class="label" id="count">1 / 4</span></div>
+    <div class="segs" id="segs" aria-hidden="true"></div>
+    <form id="qform" novalidate>
+      <div id="screens"></div>
+      <div class="qfoot">
+        <p class="qhint" id="qhint" aria-live="polite"></p>
+        <button class="pill" id="qnext" type="submit" disabled>Continue
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+        </button>
+        <button class="qskip" id="qskip" type="button" hidden>Skip for now</button>
       </div>
     </form>
-    <div class="step" data-k="role" id="s1">
-      <p class="label">In 2031</p>
-      <h2 class="serif">What do you<br>spend your days on?</h2>
-      <ul class="opts">
-        <li><button data-v="a designer">Designing things <span>01</span></button></li>
-        <li><button data-v="a founder">Running my own company <span>02</span></button></li>
-        <li><button data-v="a doctor">Healing people <span>03</span></button></li>
-        <li><button data-v="an artist">Making art <span>04</span></button></li>
-        <li><button data-v="an engineer">Building technology <span>05</span></button></li>
-      </ul>
-    </div>
-    <div class="step" data-k="place" id="s2">
-      <p class="label">Every morning</p>
-      <h2 class="serif">Where do you<br>wake up?</h2>
-      <ul class="opts">
-        <li><button data-v="a flat in Bangalore">A flat in Bangalore <span>01</span></button></li>
-        <li><button data-v="a quiet house in Kochi">A quiet house in Kochi <span>02</span></button></li>
-        <li><button data-v="a new country">A new country <span>03</span></button></li>
-        <li><button data-v="a home by the sea">A home by the sea <span>04</span></button></li>
-      </ul>
-    </div>
-    <div class="step" data-k="feel" id="s3">
-      <p class="label">Most days</p>
-      <h2 class="serif">How do you<br>feel?</h2>
-      <ul class="opts">
-        <li><button data-v="calm">Calm <span>01</span></button></li>
-        <li><button data-v="free">Free <span>02</span></button></li>
-        <li><button data-v="proud of myself">Proud of myself <span>03</span></button></li>
-        <li><button data-v="like I finally belong">Like I belong <span>04</span></button></li>
-      </ul>
-    </div>
   </div>
 </section>
 

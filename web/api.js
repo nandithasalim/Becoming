@@ -28,8 +28,14 @@ export async function getMe() {
   try { return await call('/me'); } catch (e) { if (e.status === 401) return null; throw e; }
 }
 
-export async function saveAnswers(a) {
-  return call('/me/answers', { method: 'PUT', body: { display_name: a.name || '', role: a.role, place: a.place, feel: a.feel } });
+/** Saves all onboarding answers (shape: see AnswersIn in backend/app/schemas.py). */
+export async function saveAnswers(body) {
+  return call('/me/answers', { method: 'PUT', body });
+}
+
+/** Saves screen 4 later, for people who tapped "Skip for now". */
+export async function saveDream(dream) {
+  return call('/me/dream', { method: 'PUT', body: dream });
 }
 
 async function finishLogin(path, body) {

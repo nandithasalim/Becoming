@@ -1,0 +1,427 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Becoming: 30 Days</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a summary band (goal, routine, rules), week filter, then one card per day with five tickable tracks. Amber = the eclipse ring of light. */
+:root{
+  --bg:#F6F5F2; --surface:#FFFFFF; --sunk:#ECEAE5; --ink:#18171A; --muted:#5F5B55; --line:#DDD9D2;
+  --ring:#B4690E; --ring-soft:#F6E7D2;
+  --t-learn:#2E5E8C; --t-build:#B4690E; --t-code:#2E7A55; --t-oss:#7A4FA3; --t-post:#A33F5C;
+  --done:#2E7A55;
+  --display:"Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --body:"Inter", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E0E10; --surface:#17171A; --sunk:#202024; --ink:#ECEAE6; --muted:#A39F98; --line:#2E2E33;
+  --ring:#F0A54A; --ring-soft:#33240F;
+  --t-learn:#8DB6E0; --t-build:#F0A54A; --t-code:#79C99B; --t-oss:#BE9BE6; --t-post:#E991AA; --done:#79C99B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E0E10; --surface:#17171A; --sunk:#202024; --ink:#ECEAE6; --muted:#A39F98; --line:#2E2E33;
+  --ring:#F0A54A; --ring-soft:#33240F;
+  --t-learn:#8DB6E0; --t-build:#F0A54A; --t-code:#79C99B; --t-oss:#BE9BE6; --t-post:#E991AA; --done:#79C99B; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body);margin:0}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 72px;display:grid;gap:22px}
+h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1{font-size:clamp(28px,5vw,42px)} h2{font-size:20px} h3{font-size:16px}
+p{margin:0} .muted{color:var(--muted)}
+.head{display:grid;gap:10px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ring)}
+.progress{display:grid;gap:6px;max-width:520px}
+.bar{height:8px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:var(--ring);transition:width .3s}
+.ptext{font:500 13px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:10px;align-content:start;min-width:0}
+.panel ul,.panel ol{margin:0;padding-left:18px;display:grid;gap:6px}
+.routine{display:grid;gap:6px}
+.rrow{display:grid;grid-template-columns:78px 1fr;gap:10px;align-items:baseline}
+.rrow b{font:500 12px var(--mono);color:var(--muted)}
+.key{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:13px}
+.key span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--c)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 14px;font:500 13px var(--body);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.weekhead{display:grid;gap:4px;padding-top:6px}
+.weekhead p{color:var(--muted)}
+.days{display:grid;gap:12px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px}
+.day.today{border-color:var(--ring);box-shadow:0 0 0 3px var(--ring-soft)}
+.day.light{background:var(--sunk)}
+.dtop{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;justify-content:space-between}
+.dnum{font:600 13px var(--mono);color:var(--ring)}
+.dtitle{font-family:var(--display);font-weight:600;font-size:17px}
+.dmeta{font:500 12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.tasks{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.task{display:grid;grid-template-columns:22px 70px minmax(0,1fr);gap:10px;align-items:start}
+.task input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--done)}
+.tag{font:500 11px/1.9 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
+.task label{cursor:pointer;min-width:0;overflow-wrap:anywhere}
+.task input:checked ~ label{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+.finish{background:var(--ring-soft);border:1px solid var(--ring);border-radius:12px;padding:18px;display:grid;gap:8px}
+.score{width:100%;border-collapse:collapse;font-size:14px}
+.score th,.score td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+.score th{font:500 12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.tablewrap{overflow-x:auto}
+@media (max-width:520px){.task{grid-template-columns:22px minmax(0,1fr)}.task .tag{grid-column:2}.task label{grid-column:2}}
+@media (prefers-reduced-motion:reduce){.bar>i{transition:none}}
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <span class="eyebrow">20 Nov – 20 Dec 2026</span>
+    <h1>Becoming: 30 Days</h1>
+    <p class="muted" style="max-width:68ch">Build Becoming into a live app real people use, learn the backend and AI fundamentals behind every piece, code without AI every day, open PRs at 3 hiring companies (Bolna, Future AGI, Plane), do a stand-out build for each Good-odds company plus ThreatMark and SerpApi, and show all of it in public. By 20 December you have a product with users, numbers you can quote, 3 PRs, and every focus company contacted with real work.</p>
+    <div class="progress">
+      <div class="bar" role="progressbar" aria-label="Tasks done" aria-valuemin="0" aria-valuemax="100"><i id="barFill"></i></div>
+      <span class="ptext" id="ptext">0 of 0 tasks done</span>
+    </div>
+  </header>
+
+  <section class="grid3" aria-label="How every day works">
+    <div class="panel">
+      <h2>Every day, 12 PM to 12 AM</h2>
+      <div class="routine">
+        <div class="rrow"><b>12:00</b><span>Wake up, water, food. Read today's card.</span></div>
+        <div class="rrow"><b>12:30</b><span><b>Learn</b> today's topic (45 min)</span></div>
+        <div class="rrow"><b>1:15</b><span><b>No-AI code</b> drill, timed (30 min)</span></div>
+        <div class="rrow"><b>1:45</b><span>Lunch break</span></div>
+        <div class="rrow"><b>2:30</b><span><b>Build</b> Becoming, block 1 (3 hrs)</span></div>
+        <div class="rrow"><b>5:30</b><span>Break: walk, outside</span></div>
+        <div class="rrow"><b>6:00</b><span><b>Slot</b>: open source, stand-out build or applications (2 hrs)</span></div>
+        <div class="rrow"><b>8:00</b><span>Dinner</span></div>
+        <div class="rrow"><b>8:45</b><span><b>Build</b> Becoming, block 2 (1.5 hrs)</span></div>
+        <div class="rrow"><b>10:15</b><span><b>Post</b>, then comment on 5 founders' or engineers' posts (30 min)</span></div>
+        <div class="rrow"><b>10:45</b><span>Explain today's work out loud for 5 minutes, as if in an interview</span></div>
+        <div class="rrow"><b>11:30</b><span>Write tomorrow's 3 lines. Screens off.</span></div>
+        <div class="rrow"><b>12:30 AM</b><span>Asleep</span></div>
+      </div>
+      <p class="muted">If UST needs different hours, keep the order and shift the times.</p>
+    </div>
+    <div class="panel">
+      <h2>Every week</h2>
+      <div class="routine">
+        <div class="rrow"><b>Mon</b><span><b>Open source:</b> pick an issue and start the fix</span></div>
+        <div class="rrow"><b>Tue</b><span><b>Stand out:</b> a build or bug report for one company</span></div>
+        <div class="rrow"><b>Wed</b><span><b>Apply:</b> 2–3 applications, founder messages and follow-ups</span></div>
+        <div class="rrow"><b>Thu</b><span><b>Open source:</b> finish the fix, open the PR, message the founder</span></div>
+        <div class="rrow"><b>Fri</b><span><b>Stand out:</b> the next company's build</span></div>
+        <div class="rrow"><b>Sat</b><span><b>Becoming</b> big day: the slot goes to the app too</span></div>
+        <div class="rrow"><b>Sun</b><span><b>Light:</b> scoreboard, one small task, rest the evening</span></div>
+      </div>
+      <div class="key">
+        <span><i class="dot" style="--c:var(--t-learn)"></i>Learn</span>
+        <span><i class="dot" style="--c:var(--t-build)"></i>Build</span>
+        <span><i class="dot" style="--c:var(--t-code)"></i>No-AI code</span>
+        <span><i class="dot" style="--c:var(--t-oss)"></i>Slot</span>
+        <span><i class="dot" style="--c:var(--t-post)"></i>Post</span>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Rules</h2>
+      <ol>
+        <li><b>Decide before you ask AI.</b> Write 3–5 lines on what you'll build and why, then use AI. AI-allowed interviews grade exactly this.</li>
+        <li><b>No-AI drill first,</b> even on bad days. Thirty minutes is enough.</li>
+        <li><b>Only Good-odds companies,</b> plus ThreatMark and SerpApi. Nothing else gets deep work.</li>
+        <li><b>Post every day:</b> X daily, LinkedIn 3 times a week, Instagram 2 reels a week.</li>
+        <li><b>Asleep by 12:30 AM.</b> Twelve hours of work only holds up with real sleep.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Sunday scoreboard">
+    <h2>Sunday scoreboard</h2>
+    <p class="muted">Write these numbers every Sunday. They become your posts, your case study and your emails.</p>
+    <div class="tablewrap">
+      <table class="score">
+        <thead><tr><th>Number</th><th>22 Nov</th><th>29 Nov</th><th>6 Dec</th><th>13 Dec</th><th>20 Dec target</th></tr></thead>
+        <tbody>
+          <tr><td>Users signed up</td><td>–</td><td>–</td><td>–</td><td>–</td><td>100+</td></tr>
+          <tr><td>Came back on day 3</td><td>–</td><td>–</td><td>–</td><td>–</td><td>30%+</td></tr>
+          <tr><td>Persona consistency score</td><td>–</td><td>–</td><td>–</td><td>–</td><td>90%+</td></tr>
+          <tr><td>No-AI drills done</td><td>–</td><td>–</td><td>–</td><td>–</td><td>26</td></tr>
+          <tr><td>PRs opened / merged</td><td>–</td><td>–</td><td>–</td><td>–</td><td>3 / 1+</td></tr>
+          <tr><td>Companies sent a stand-out</td><td>–</td><td>–</td><td>–</td><td>–</td><td>8+</td></tr>
+          <tr><td>Posts published</td><td>–</td><td>–</td><td>–</td><td>–</td><td>45+</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="filters" role="group" aria-label="Show week">
+    <button class="chip" data-w="all" aria-pressed="true">All</button>
+    <button class="chip" data-w="1" aria-pressed="false">Week 1</button>
+    <button class="chip" data-w="2" aria-pressed="false">Week 2</button>
+    <button class="chip" data-w="3" aria-pressed="false">Week 3</button>
+    <button class="chip" data-w="4" aria-pressed="false">Week 4</button>
+    <button class="chip" data-w="5" aria-pressed="false">Final days</button>
+    <button class="chip" id="jumpToday" type="button">Go to today</button>
+  </div>
+
+  <main id="plan" class="days"></main>
+
+  <section class="finish" id="finish">
+    <span class="eyebrow">Sunday 20 December</span>
+    <h2>Finish line</h2>
+    <p>Fill in the final scoreboard. Send any emails left from the 30. Reply to everyone who answered. Then rest. In January, follow up on every email and use the numbers from this month in every application.</p>
+  </section>
+</div>
+
+<script>
+const T = {learn:["Learn","--t-learn"], build:["Build","--t-build"], code:["No-AI","--t-code"], oss:["Slot","--t-oss"], post:["Post","--t-post"]};
+const WEEKS = {
+  1:["Week 1 · The real future self","Phase 2: a real database first, then the AI writes the future self from the user's answers and talks back."],
+  2:["Week 2 · Memory and the brain","Phase 3: chat memory, the persona-consistency engine with real numbers, and a crisis safety layer."],
+  3:["Week 3 · Chapters, deploy and beta","Chapters, a live deploy with a privacy page and Google sign-in, the app on your phone, and 20 beta users."],
+  4:["Week 4 · Launch","Launch Becoming in public, then fix fast."],
+  5:["Final days · Turn attention into interviews","Case study, resume, mock rounds and 30 targeted emails."]
+};
+const D = [
+ // Week 1
+ {w:1,d:"2026-11-20",t:"LLM client layer",
+  learn:"How LLM APIs work: tokens, temperature, system vs user messages, and what each call costs. Plus dependency injection: why the app should depend on your wrapper, not on Google's library.",
+  build:"Create llm.py: one wrapper for Gemini Flash-Lite with a timeout and the key read from env. Make your first real call from the backend. Also write a FakeLLM with the same methods, for tests.",
+  code:"Write retry(fn, attempts, backoff) with exponential backoff, plus 3 tests.",
+  oss:"Quick start: apply to Bolna's AI Solutions Engineer role and to Evnek's Generative AI Engineer role. Then set up Bolna locally (github.com/bolna-ai/bolna).",slot:"Apply",
+  post:"X and LinkedIn: \"Day 1 of 30. I'm building Becoming, an app where you meet your future self.\" Attach the reveal clip."},
+ {w:1,d:"2026-11-21",t:"Real database first",
+  learn:"Migrations with Alembic, and why create_all isn't enough once real data exists.",
+  build:"Move to Supabase Postgres now, before adding new tables. Set up Alembic and make the first migration from today's tables (users, future_selves). Every new table from here on is a migration.",
+  code:"Write a SQL query by hand: count users who saved answers, grouped by the day they signed up.",
+  oss:"Big build day: use this slot for more Becoming work.",slot:"Becoming",
+  post:"Instagram reel: the eclipse reveal, with no explanation. Let it look mysterious."},
+ {w:1,d:"2026-11-22",t:"Design the future self",light:true,
+  learn:"Structured outputs (JSON schemas, Pydantic v2) and prompt design: system prompts, few-shot examples, prompt versions kept in files.",
+  build:"Pydantic model FutureSelfProfile {story, values, habits, chapters[], today_note}. Not called FutureSelf: that table already holds the answers. Use the user's own 3 traits; don't let the AI invent new ones. Write the prompt as a versioned file.",
+  code:"Parse a JSON string into a dataclass by hand, raising a clear error for each missing field.",
+  oss:"Use FrontPage's product for an hour and note every bug you hit: steps, expected, actual.",slot:"Light",
+  post:"Fill in the Sunday scoreboard. Post on X: \"Week 1, day 3: designing the prompt that writes your future self.\""},
+ {w:1,d:"2026-11-23",t:"Save it and serve it",
+  learn:"Caching and idempotency: hash the inputs so the same answers never pay for a second generation.",
+  build:"Migration for a future_self_profiles table linked to the user, and POST /me/future-self that generates, saves and returns it, reusing the saved row when the answers hash hasn't changed.",
+  code:"Write a prompt-template function that fills variables and errors on a missing key.",
+  oss:"Bolna: pick one open issue and reproduce it locally. Comment on it saying you'd like to take it.",slot:"Open src",
+  post:"X: \"The AI now writes your future self from your answers.\" Show one generated story."},
+ {w:1,d:"2026-11-24",t:"Make bad output impossible",
+  learn:"LLM failure handling: timeouts, 429 rate limits, and a validation repair loop.",
+  build:"Repair loop: when Pydantic fails, send the error back to the LLM. Retry at most twice, then use a fallback template. Test every path with the FakeLLM (good JSON, broken JSON, timeout).",
+  code:"Write a small CircuitBreaker class (closed, open, half-open) with tests.",
+  oss:"FrontPage: finish a clean bug report of 3–5 bugs with steps to reproduce and screenshots.",slot:"Stand out",
+  post:"LinkedIn: \"How I made an LLM return valid JSON every single time.\" Keep it short and include the code idea."},
+ {w:1,d:"2026-11-25",t:"Streaming chat",
+  learn:"Streaming: SSE vs WebSocket, and async generators in Python.",
+  build:"Migration for a messages table. POST /me/chat streams the future self's reply word by word over SSE, in its own voice, and saves both your message and the reply. Tests with the FakeLLM.",
+  code:"Write an async generator that yields words with a delay, and a consumer that prints them.",
+  oss:"Apply to FrontPage (attach the bug report), Future AGI (Backend Developer I or the FDE intern role) and Revspot. Message each founder the same day.",slot:"Apply",
+  post:"X: a screen recording of the reply streaming in."},
+ {w:1,d:"2026-11-26",t:"Connect it end to end",
+  learn:"Frontend to backend: fetch, CORS, auth headers, and writing an API contract.",
+  build:"Write the API contract: request and response shapes for /me/future-self and /me/chat, and the SSE event format. Claude connects the reveal, the home screen and the \"Ask your future self\" box to it. Then test the whole flow with your own answers.",
+  code:"Write a token-bucket rate limiter class with tests.",
+  oss:"Bolna: fix the issue, add a test and open the PR. Send the link to Prateek (CTO) on LinkedIn.",slot:"Open src",
+  post:"Week 1 recap reel: \"My future self talks back now.\""},
+ // Week 2
+ {w:2,d:"2026-11-27",t:"Chat memory",
+  learn:"How chat memory works: context windows, summarisation and token budgets.",
+  build:"After each chat, save a 2–3 line summary. Load the last 5 summaries into the next chat's prompt.",
+  code:"Write a function that trims a message list to fit a word budget, keeping the system prompt.",
+  oss:"Kutlerri, part 1: turn your booking agent into a catering-inquiry agent (menu, headcount, date, quote).",slot:"Stand out",
+  post:"X: \"Your future self now remembers what you told it last week.\""},
+ {w:2,d:"2026-11-28",t:"Facts in pgvector",
+  learn:"Embeddings and pgvector: cosine similarity and HNSW indexes.",
+  build:"Enable pgvector on Supabase (it needs Postgres, which you set up on day 2). Extract key facts (\"wants to open a bakery\") into it, and retrieve the top 3 relevant facts for each message.",
+  code:"Write cosine similarity and top-k from scratch using plain lists.",
+  oss:"Big build day: use this slot for more Becoming work.",slot:"Becoming",
+  post:"LinkedIn: \"How my app remembers you,\" with a simple diagram of summaries plus facts."},
+ {w:2,d:"2026-11-29",t:"Your test scenarios",light:true,
+  learn:"Evals 101: golden sets, pass rates, and why you measure before you fix.",
+  build:"Write 50 decision scenarios in YAML (\"skip the gym today?\", \"quit my job?\") across different personas.",
+  code:"Write a YAML loader that validates each scenario and reports the bad ones.",
+  oss:"Kutlerri: add the upsell suggestion and record a 60-second demo.",slot:"Light",
+  post:"Sunday scoreboard. Instagram reel of the chat."},
+ {w:2,d:"2026-11-30",t:"Baseline consistency",
+  learn:"LLM-as-judge: rubrics, score scales and judge bias.",
+  build:"A judge that scores each reply against the user's traits from 0 to 1. Run all 50 scenarios and record your baseline %.",
+  code:"Write mean, median and p90 over a list of scores, by hand.",
+  oss:"traceAI: set it up and add tracing to Becoming's LLM calls (github.com/future-agi/traceAI).",slot:"Open src",
+  post:"X: \"My AI future self stays in character only X% of the time. Fixing that this week.\""},
+ {w:2,d:"2026-12-01",t:"The consistency engine",
+  learn:"Guardrails: checks before and after the main call, and regenerate loops.",
+  build:"If a reply scores below the threshold, regenerate it with the judge's feedback (max 2). Re-run all 50 scenarios.",
+  code:"Write the regenerate loop as a pure function and test it with a fake judge.",
+  oss:"Kutlerri: polish the demo, then send it to Kiran with a short note.",slot:"Stand out",
+  post:"LinkedIn, your big one: \"My AI future self stayed in character X% → Y%. Here's how.\""},
+ {w:2,d:"2026-12-02",t:"Crisis safety layer",
+  learn:"Safety for apps people use when they feel low: detection, a safe response, Tele-MANAS 14416, and what not to store.",
+  build:"A regex pre-filter plus an LLM classifier on all typed text. High risk gets a warm, fixed response with helplines.",
+  code:"Write the regex pre-filter with 15 test sentences, safe and risky.",
+  oss:"Apply to Confido Health's Forward Deployed AI Engineer role. Follow up on your Bolna PR and on any replies.",slot:"Apply",
+  post:"X: \"An app about hope has to handle the hardest messages safely. Here's how mine does.\""},
+ {w:2,d:"2026-12-03",t:"Cost control and limits",
+  learn:"Caching, model routing and counting tokens and cost.",
+  build:"Cache repeated prompts, use the cheap model for summaries, and log tokens and cost per user per day. Add a per-user daily message cap and token budget on chat, before any stranger uses the app.",
+  code:"Write an LRU cache class from scratch.",
+  oss:"traceAI: fix one gap you hit, with a test, and open the PR. Message a Future AGI engineer with the link and your OpenLLMetry PR.",slot:"Open src",
+  post:"Week 2 recap reel, ending on your cost per user."},
+ // Week 3
+ {w:3,d:"2026-12-04",t:"Chapters and daily task",
+  learn:"Scheduling and time zones: cron, UTC vs local time.",
+  build:"Chapter unlock rules, plus one daily task from the future self. (Claude restyles the home screen to the night-sky look.)",
+  code:"Write: given a signup date and time zone, which chapter and day is it today?",
+  oss:"Confido: add patient-call cases to your bench (reschedule, wrong date of birth, insurance question, emergency) and record a 60-second demo.",slot:"Stand out",
+  post:"X: a clip of a chapter unlocking."},
+ {w:3,d:"2026-12-05",t:"Ready for production",
+  learn:"Deployment: env vars, health checks and Docker basics.",
+  build:"Dockerfile and production settings (dev login off, CORS set to your domain). Write a privacy policy and terms page. Switch Gemini to the paid tier: the free tier may use your data to improve Google's products, which isn't right for people's personal feelings.",
+  code:"Write the Dockerfile without AI.",
+  oss:"Big build day: deploy prep for Becoming.",slot:"Becoming",
+  post:"LinkedIn: \"3 things I learned getting an AI app ready for real users.\""},
+ {w:3,d:"2026-12-06",t:"Deploy",light:true,
+  learn:"Google sign-in in production: OAuth client ID, consent screen, authorised domains.",
+  build:"API on Render, web on Vercel, Google sign-in working on the live domain (budget an hour for the OAuth setup). Render's free tier sleeps when idle, so the first request is slow.",
+  code:"Write a /health endpoint that also checks the database, with a test.",
+  oss:"Rest the evening. Fill in the scoreboard.",slot:"Light",
+  post:"Sunday scoreboard. X: \"Becoming is live (private beta).\""},
+ {w:3,d:"2026-12-07",t:"On your phone",
+  learn:"PWA basics: manifest, service worker and installing on a phone.",
+  build:"Make Becoming installable and test it on Android.",
+  code:"Write an event-tracking endpoint and table by hand.",
+  oss:"Plane: self-host it and pick one Python/Django backend issue (github.com/makeplane/plane).",slot:"Open src",
+  post:"X: a clip installing it on your phone."},
+ {w:3,d:"2026-12-08",t:"Private beta",
+  learn:"Product analytics: activation, day 1 and day 7 retention, funnels.",
+  build:"Track signup, reveal, first chat and return. Invite 20 beta users.",
+  code:"Write a retention-calculation function in Python.",
+  oss:"Revspot: turn your agent into a lead-qualification flow and compare 2 prompt versions with your bench.",slot:"Stand out",
+  post:"LinkedIn and Instagram: ask for beta testers."},
+ {w:3,d:"2026-12-09",t:"Fix what beta finds",
+  learn:"Packaging Python libraries: pyproject, versions, and a README that sells.",
+  build:"Fix the top beta bugs.",
+  code:"Rewrite the consistency scorer's core function from memory, without AI.",
+  oss:"Send the Confido demo to Vichar and the Revspot results to Darshan. Apply to Plane's Backend (Python) role.",slot:"Apply",
+  post:"X: one thing a beta user said."},
+ {w:3,d:"2026-12-10",t:"See inside production",
+  learn:"Observability: structured logs, Sentry and LLM traces (Langfuse).",
+  build:"Add Sentry and Langfuse tracing.",
+  code:"Write a logging middleware that adds a request id.",
+  oss:"Plane: fix the issue, add a test and open the PR. Then message a Plane founder with the link.",slot:"Open src",
+  post:"Week 3 recap with beta numbers."},
+ // Week 4
+ {w:4,d:"2026-12-11",t:"Polish from feedback",
+  learn:"Launch strategy: the hook, the 30-second demo, where to post.",
+  build:"Polish onboarding using beta feedback.",
+  code:"Write a streak counter that uses the user's own time zone, with tests.",
+  oss:"ThreatMark: learn Rust basics, rewrite one slow Python function in Rust with PyO3, and benchmark both.",slot:"Stand out",
+  post:"Tease the launch on X and Instagram."},
+ {w:4,d:"2026-12-12",t:"Launch kit",
+  learn:"Writing for Reddit and Product Hunt: value first, no spam.",
+  build:"Landing page copy, 3 screenshots and a 30-second demo video.",
+  code:"Write a data-export endpoint for a user's own data.",
+  oss:"Big build day: launch prep.",slot:"Becoming",
+  post:"Instagram reel 1 of your launch set."},
+ {w:4,d:"2026-12-13",t:"Final checks",light:true,
+  learn:"Rest and review your notes.",
+  build:"Account deletion and data export. Final test on your phone.",
+  code:"Rest.",
+  oss:"Finish the launch kit (screenshots, demo video). Rest the evening.",slot:"Light",
+  post:"Sunday scoreboard. \"Launching Monday.\""},
+ {w:4,d:"2026-12-14",t:"Launch day",
+  learn:"No new topic today.",
+  build:"Launch Becoming on Product Hunt, LinkedIn, X, Instagram and Reddit. Hotfixes only.",
+  code:"Hotfixes only, written by you.",
+  oss:"Launch day. Becoming only.",slot:"Launch",
+  post:"All launch posts. Reply to every comment."},
+ {w:4,d:"2026-12-15",t:"Fix fast",
+  learn:"Turning user feedback into priorities.",
+  build:"Fix the top 3 issues from launch.",
+  code:"Write one of those fixes fully without AI.",
+  oss:"SerpApi: build a small Python tool on the SerpApi API (for example a daily ranking tracker). Spend 2 hours on Ruby basics.",slot:"Stand out",
+  post:"X: thank-you post with day-1 numbers."},
+ {w:4,d:"2026-12-16",t:"Case study",
+  learn:"Writing a case study: problem, decisions, numbers, tradeoffs.",
+  build:"Write the case study as a blog post or LinkedIn article.",
+  code:"Rest.",
+  oss:"Email ThreatMark (career@threatmark.com, subject \"HN Who's Hiring\") with your benchmark. Apply to SerpApi. Retake the micro1 AI interview.",slot:"Apply",
+  post:"Publish the case study."},
+ // Final days
+ {w:5,d:"2026-12-17",t:"Pick 30 companies",
+  learn:"Researching a company in 15 minutes.",
+  build:"Shortlist 30 startups: consumer AI, AI companions, evals and memory tools.",
+  code:"Timed no-AI mock: build a FastAPI CRUD app in 45 minutes.",
+  oss:"Push your Bolna, traceAI and Plane PRs toward merge. If you have time, open a second small Bolna PR.",slot:"Open src",
+  post:"X: what's next for Becoming."},
+ {w:5,d:"2026-12-18",t:"Your story and first 10 emails",
+  learn:"Your interview story: a 2-minute Becoming pitch and your 3 hardest decisions.",
+  build:"Put Becoming at the top of your resume and portfolio. Email the first 10 startups.",
+  code:"AI-allowed mock: add a feature to an unfamiliar repo in 45 minutes, talking through your reasoning.",
+  oss:"Follow up with every Good-odds company. Send each one your Becoming launch and your numbers.",slot:"Apply",
+  post:"LinkedIn: \"What 30 days of building in public taught me.\""},
+ {w:5,d:"2026-12-19",t:"20 more emails",
+  learn:"Review every topic from the month.",
+  build:"Email 20 more startups (30 in total).",
+  code:"Timed no-AI mock: LRU cache plus rate limiter in 45 minutes.",
+  oss:"Final round: reply to everyone who answered, and book any interviews.",slot:"Apply",
+  post:"X thread: \"30 days, 1 app: what I built,\" with your numbers."}
+];
+
+const KEY = "becoming30:v1";
+let done = {};
+try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch(e) { done = {}; }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(done)); } catch(e) {} }
+
+const fmt = new Intl.DateTimeFormat("en-GB",{weekday:"short",day:"numeric",month:"short"});
+function todayISO(){ const n=new Date(); return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0"); }
+function esc(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function render(){
+  const root = document.getElementById("plan");
+  const tISO = todayISO();
+  let html = "", lastW = 0;
+  D.forEach((x,i)=>{
+    if (x.w !== lastW){ lastW = x.w; const [h,p]=WEEKS[x.w];
+      html += `<div class="weekhead" data-week="${x.w}"><h2>${esc(h)}</h2><p>${esc(p)}</p></div>`; }
+    const date = new Date(x.d+"T12:00:00");
+    const isToday = x.d === tISO;
+    const tasks = ["learn","build","code","oss","post"].map(k=>{
+      const id = `d${i+1}-${k}`;
+      const lab = k==="oss" ? x.slot : T[k][0];
+      return `<li class="task" style="--c:var(${T[k][1]})"><input type="checkbox" id="${id}" ${done[id]?"checked":""}><span class="tag">${lab}</span><label for="${id}">${esc(x[k])}</label></li>`;
+    }).join("");
+    html += `<article class="day${isToday?" today":""}${x.light?" light":""}" id="day-${i+1}" data-week="${x.w}">
+      <div class="dtop"><div><span class="dnum">DAY ${String(i+1).padStart(2,"0")}</span> <span class="dtitle">${esc(x.t)}</span></div>
+      <span class="dmeta">${fmt.format(date)}${isToday?" · today":""}${x.light?" · lighter day":""}</span></div>
+      <ul class="tasks">${tasks}</ul></article>`;
+  });
+  root.innerHTML = html;
+  root.querySelectorAll("input[type=checkbox]").forEach(cb=>cb.addEventListener("change",()=>{ if(cb.checked) done[cb.id]=1; else delete done[cb.id]; save(); progress(); }));
+  progress();
+}
+function progress(){
+  const total = D.length*5, n = Object.keys(done).length;
+  const pct = Math.round(n/total*100);
+  document.getElementById("barFill").style.width = pct+"%";
+  document.querySelector(".bar").setAttribute("aria-valuenow", pct);
+  document.getElementById("ptext").textContent = `${n} of ${total} tasks done · ${pct}%`;
+}
+document.querySelectorAll(".chip[data-w]").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".chip[data-w]").forEach(c=>c.setAttribute("aria-pressed", c===b?"true":"false"));
+  const w = b.dataset.w;
+  document.querySelectorAll("#plan [data-week]").forEach(el=>{ el.hidden = !(w==="all" || el.dataset.week===w); });
+  document.getElementById("finish").hidden = !(w==="all" || w==="5");
+}));
+document.getElementById("jumpToday").addEventListener("click",()=>{
+  const el = document.querySelector(".day.today") || document.getElementById("day-1");
+  document.querySelectorAll(".chip[data-w]").forEach(c=>c.setAttribute("aria-pressed", c.dataset.w==="all"?"true":"false"));
+  document.querySelectorAll("#plan [data-week]").forEach(e=>e.hidden=false);
+  document.getElementById("finish").hidden=false;
+  el.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start"});
+});
+render();
+</script>
+
+</body></html>

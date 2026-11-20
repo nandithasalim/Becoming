@@ -1,4 +1,13 @@
 import * as api from './api.js';
+import { SECTIONS, MAX_TEXT } from './questions.js';
+
+// one question per screen, in section order
+const SCREENS = SECTIONS.flatMap((sec, si) => sec.qs.map((q, qi) => ({
+  section: si, qs: [q], optional: !!sec.optional, auto: q.type === 'one',
+  sub: `${sec.title} · ${qi + 1} of ${sec.qs.length}${sec.optional ? ' · optional' : ''}`,
+  intro: qi === 0 ? sec.sub : '', kicker: sec.kicker || '',
+})));
+const DREAM_QS = SECTIONS.find((sec) => sec.optional).qs;
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -286,22 +295,203 @@ resize(); hideFigure(); requestAnimationFrame(loop);
 const $ = (id) => document.getElementById(id);
 const views = ['intro', 'ask', 'reveal', 'home'];
 const show = (v) => { views.forEach(id => $(id).classList.toggle('on', id === v)); if (v !== 'reveal') mode = 'dawn'; };
-const ans = { name: '', role: 'a designer', place: 'a flat in Bangalore', feel: 'calm' };
+// ================= questions (4 screens, 3 each) =================
+const ans = {
+  display_name: '', current_feeling: '', situation: '',
+  role: '', place: '', feel: '',
+  traits: [], let_go: [], voice: '',
+  loved_as_kid: [], would_try: '', focus_areas: [],
+  dream_done: false,
+};
+const ALL_QS = SCREENS.flatMap((sc) => sc.qs);
+const custom = {};      // k -> typed "Something else" text
+const otherOn = {};     // k -> is the "Something else" chip on
 let step = 0;
-const steps = [$('s0'), $('s1'), $('s2'), $('s3')];
-function setStep(i) {
-  step = i; steps.forEach((s, k) => s.classList.toggle('on', k === i));
-  $('bar').style.width = ((i + 1) / 4 * 100) + '%'; $('count').textContent = `${i + 1} / 4`;
-  if (i === 0) setTimeout(() => $('nm').focus({ preventScroll: true }), 400);
+const clean = (t) => t.replace(/\s+/g, ' ').trim();
+const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// what each question currently holds (presets + typed text)
+function value(q) {
+  if (q.type === 'text' || q.type === 'long') return clean(ans[q.k]);
+  const typed = otherOn[q.k] ? clean(custom[q.k] || '') : '';
+  if (q.type === 'one') return otherOn[q.k] ? typed : ans[q.k];
+  const list = [...ans[q.k]];
+  if (typed && !list.some((v) => v.toLowerCase() === typed.toLowerCase())) list.push(typed);
+  return list;
 }
-$('go').addEventListener('click', () => { show('ask'); setStep(0); });
-$('back').addEventListener('click', () => step === 0 ? show('intro') : setStep(step - 1));
-$('s0').addEventListener('submit', (e) => { e.preventDefault(); ans.name = $('nm').value.trim(); setStep(1); });
-document.querySelectorAll('.opts').forEach((ul) => ul.addEventListener('click', (e) => {
-  const b = e.target.closest('button'); if (!b) return;
-  ans[ul.parentElement.dataset.k] = b.dataset.v;
-  if (step < 3) setStep(step + 1); else reveal();
-}));
+const isPreset = (q, v) => q.opts.some(([val]) => val === v);
+
+// what's still missing on a screen (empty string = ready)
+function missing(sc) {
+  if (sc.optional) return '';
+  for (const q of sc.qs) {
+    const v = value(q);
+    if (q.type === 'text' && !v) return 'Add your name to continue.';
+    if (q.type === 'one' && !v) return otherOn[q.k] ? 'Type your own answer, or pick one.' : ' ';
+    if (q.type === 'many') {
+      const left = (q.exact || q.min || 0) - v.length;
+      if (left > 0) return `Pick ${left} more ${q.noun}${left > 1 ? 's' : ''}.`;
+    }
+  }
+  return '';
+}
+const limitOf = (q) => q.exact || q.max || 99;
+
+function renderScreens() {
+  $('segs').innerHTML = SECTIONS.map((sec) => `<i title="${esc(sec.title)}"></i>`).join('');
+  $('segs').style.gridTemplateColumns = `repeat(${SECTIONS.length}, minmax(0, 1fr))`;
+  $('screens').innerHTML = SCREENS.map((sc, i) => {
+    const solo = sc.qs.length === 1;                       // one question = it is the big title
+    const head = solo
+      ? `<div class="qhead"><p class="label">${esc(sc.sub)}</p>${sc.kicker ? `<p class="kicker serif" aria-hidden="true">${esc(sc.kicker)}</p>` : ''}<h2 class="serif" id="sct${i}">${sc.kicker ? `<span class="sr">${esc(sc.kicker)} </span>` : ''}${esc(sc.qs[0].label)}</h2>${sc.intro && sc.optional ? `<p class="ssub">${esc(sc.intro)}</p>` : ''}${hintLine(sc.qs[0])}</div>`
+      : `<div><h2 class="serif" id="sct${i}">${esc(sc.title)}</h2><p class="ssub">${esc(sc.sub)}</p></div>`;
+    return `<section class="screen${solo ? ' solo' : ''}" id="sc${i}" aria-labelledby="sct${i}">${head}
+      ${sc.qs.map((q) => question(q, solo)).join('')}</section>`;
+  }).join('');
+}
+function hintLine(q) {
+  if (q.type !== 'many') return '';
+  const t = q.exact ? `Pick ${q.exact}` : q.max ? `Pick up to ${q.max}` : '';
+  return `<p class="ssub">${t} · <span class="qcount" id="cnt-${q.k}"></span></p>`;
+}
+function question(q, solo) {
+  const label = solo ? '' : `<legend>${esc(q.label)}${q.type === 'many' ? ` <span class="qcount" id="cnt-${q.k}"></span>` : ''}</legend>`;
+  if (q.type === 'text') return `<div class="q"><label for="in-${q.k}"${solo ? ' class="sr"' : ''}>${esc(q.label)}</label>
+    <input class="qtext" id="in-${q.k}" data-k="${q.k}" maxlength="${q.max}" placeholder="${esc(q.placeholder)}" autocomplete="given-name"></div>`;
+  if (q.type === 'long') return `<div class="q"><label for="in-${q.k}"${solo ? ' class="sr"' : ''}>${esc(q.label)}</label>
+    <textarea class="qlong" id="in-${q.k}" data-k="${q.k}" maxlength="${q.max}" placeholder="${esc(q.placeholder)}"></textarea></div>`;
+  const other = q.custom === false ? '' : (q.type === 'one'
+    ? `<button type="button" class="card other" data-other="1" aria-pressed="false" style="--i:${q.opts.length}"><span class="ct">Something else…</span><span class="cd">Type your own</span></button>`
+    : `<button type="button" class="chip other" data-other="1" aria-pressed="false" style="--i:${q.opts.length}">Something else…</button>`);
+  const opts = q.opts.map(([v, l, d], j) => q.type === 'one'
+    ? `<button type="button" class="card" data-v="${esc(v)}" aria-pressed="false" style="--i:${j}"><span class="ct">${esc(l)}</span>${d ? `<span class="cd">${esc(d)}</span>` : ''}<span class="tick" aria-hidden="true"></span><kbd aria-hidden="true">${j + 1}</kbd></button>`
+    : `<button type="button" class="chip" data-v="${esc(v)}" aria-pressed="false" style="--i:${j}">${esc(l)}</button>`).join('');
+  const input = q.custom === false ? '' : `<input class="otherin" id="other-${q.k}" data-other-k="${q.k}" maxlength="${MAX_TEXT}" placeholder="Type your own" hidden aria-label="Your own answer for: ${esc(q.label)}">`;
+  return `<fieldset class="q" data-k="${q.k}">${label}<div class="${q.type === 'one' ? 'cards' : 'chips'}">${opts}${other}</div>${input}</fieldset>`;
+}
+
+// put the saved answers back on the chips/inputs (after Back, or coming back from the reveal)
+function paint() {
+  for (const q of ALL_QS) {
+    if (q.type === 'text' || q.type === 'long') { $('in-' + q.k).value = ans[q.k]; continue; }
+    const fs = document.querySelector(`fieldset[data-k="${q.k}"]`);
+    fs.querySelectorAll('[data-v]').forEach((c) => {
+      const on = q.type === 'one' ? (!otherOn[q.k] && ans[q.k] === c.dataset.v) : ans[q.k].includes(c.dataset.v);
+      c.setAttribute('aria-pressed', String(on));
+    });
+    const oc = fs.querySelector('.other');
+    if (oc) { oc.setAttribute('aria-pressed', String(!!otherOn[q.k])); const inp = $('other-' + q.k); inp.hidden = !otherOn[q.k]; inp.value = custom[q.k] || ''; }
+    if (q.type === 'many') { const n = value(q).length; $('cnt-' + q.k).textContent = `${n} chosen`; }
+  }
+  refresh();
+}
+
+function refresh() {
+  const sc = SCREENS[step];
+  const m = missing(sc);
+  $('qnext').disabled = !!m;
+  $('qhint').textContent = m.trim();
+  $('qskip').hidden = !sc.optional;
+  $('qnext').firstChild.textContent = step === SCREENS.length - 1 ? 'Meet my future self ' : 'Continue ';
+}
+
+function setStep(i) {
+  $('screens').dataset.dir = i < step ? 'back' : 'fwd';
+  step = i;
+  document.querySelectorAll('.screen').forEach((el, k) => el.classList.toggle('on', k === i));
+  const sec = SCREENS[i].section;
+  [...$('segs').children].forEach((seg, k) => {
+    const inSec = SCREENS.filter((x) => x.section === k), pos = inSec.indexOf(SCREENS[i]);
+    seg.style.setProperty('--f', k < sec ? 1 : k > sec ? 0 : (pos + 1) / inSec.length);
+    seg.classList.toggle('now', k === sec);
+  });
+  $('count').textContent = `${i + 1} of ${SCREENS.length}`;
+  $('ask').style.setProperty('--gx', `${15 + (i / (SCREENS.length - 1)) * 70}%`);
+  $('ask').scrollTop = 0;
+  refresh();
+  const first = SCREENS[i].qs[0];
+  if (first.type === 'text' || first.type === 'long') setTimeout(() => $('in-' + first.k).focus({ preventScroll: true }), 450);
+}
+
+renderScreens();
+$('screens').addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip, .card'); if (!chip) return;
+  const k = chip.closest('fieldset').dataset.k; const q = ALL_QS.find((x) => x.k === k);
+  if (chip.dataset.other) {
+    otherOn[k] = !otherOn[k];
+    if (q.type === 'one' && otherOn[k]) ans[k] = '';
+    if (q.type === 'many' && otherOn[k] && value(q).length >= limitOf(q) && !clean(custom[k] || '')) {
+      if (ans[k].length >= limitOf(q)) { otherOn[k] = false; $('qhint').textContent = `You can pick ${limitOf(q)}. Unselect one first.`; return; }
+    }
+    paint(); if (otherOn[k]) $('other-' + k).focus();
+    return;
+  }
+  const v = chip.dataset.v;
+  if (q.type === 'one') {
+    ans[k] = v; otherOn[k] = false;
+    if (SCREENS[step].auto) { paint(); setTimeout(() => { if (!missing(SCREENS[step])) $('qform').requestSubmit(); }, 420); return; }
+  }
+  else if (ans[k].includes(v)) ans[k] = ans[k].filter((x) => x !== v);
+  else if (value(q).length >= limitOf(q)) { $('qhint').textContent = `You can pick ${limitOf(q)}. Unselect one first.`; return; }
+  else ans[k] = [...ans[k], v];
+  paint();
+});
+$('screens').addEventListener('input', (e) => {
+  const t = e.target;
+  if (t.dataset.otherK) {
+    const q = ALL_QS.find((x) => x.k === t.dataset.otherK);
+    custom[q.k] = t.value;
+    if (q.type === 'many' && ans[q.k].length + (clean(t.value) ? 1 : 0) > limitOf(q)) { t.value = ''; custom[q.k] = ''; $('qhint').textContent = `You can pick ${limitOf(q)}. Unselect one first.`; }
+    if (q.type === 'many') { const n = value(q).length; $('cnt-' + q.k).textContent = `${n} chosen`; }
+  } else if (t.dataset.k) ans[t.dataset.k] = t.value;
+  refresh();
+});
+$('qform').addEventListener('submit', (e) => {
+  e.preventDefault();
+  if (missing(SCREENS[step])) return;
+  if (step < SCREENS.length - 1) return setStep(step + 1);
+  ans.dream_done = DREAM_QS.some((q) => { const v = value(q); return Array.isArray(v) ? v.length : !!v; });
+  reveal();
+});
+$('qskip').addEventListener('click', () => {
+  for (const q of DREAM_QS) { ans[q.k] = Array.isArray(ans[q.k]) ? [] : ''; otherOn[q.k] = false; custom[q.k] = ''; }
+  ans.dream_done = false;
+  reveal();
+});
+$('go').addEventListener('click', () => { show('ask'); paint(); setStep(0); });
+addEventListener('keydown', (e) => {
+  if (!$('ask').classList.contains('on') || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName)) return;
+  const n = Number(e.key); if (!n) return;
+  const opt = document.querySelectorAll(`#sc${step} [data-v]`)[n - 1];
+  if (opt) { e.preventDefault(); opt.click(); }
+});
+$('back').addEventListener('click', () => (step === 0 ? show('intro') : setStep(step - 1)));
+
+// the final answers, in the shape the API expects
+function finalAnswers() {
+  const out = {};
+  for (const q of ALL_QS) out[q.k] = value(q);
+  const body = {
+    display_name: out.display_name, current_feeling: out.current_feeling, situation: out.situation,
+    role: out.role, place: out.place, feel: out.feel, traits: out.traits, let_go: out.let_go, voice: out.voice,
+  };
+  if (ans.dream_done) body.dream = { loved_as_kid: out.loved_as_kid, would_try: out.would_try, focus_areas: out.focus_areas };
+  return body;
+}
+// load answers (from the API or from the reveal round-trip) into the screens' state
+function loadAnswers(a) {
+  for (const q of ALL_QS) {
+    const v = q.k in a ? a[q.k] : (a.dream || {})[q.k];
+    if (v === undefined || v === null) continue;
+    if (q.type === 'one') { if (isPreset(q, v) || q.custom === false) { ans[q.k] = v; otherOn[q.k] = false; } else { ans[q.k] = ''; otherOn[q.k] = !!v; custom[q.k] = v; } }
+    else if (q.type === 'many') { ans[q.k] = v.filter((x) => isPreset(q, x)); const extra = v.find((x) => !isPreset(q, x)); otherOn[q.k] = !!extra; custom[q.k] = extra || ''; }
+    else ans[q.k] = v;
+  }
+  ans.dream_done = !!(a.dream || a.dream_done);
+}
+const b64 = (o) => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64 = (t) => JSON.parse(decodeURIComponent(escape(atob(t.replace(/-/g, '+').replace(/_/g, '/')))));
 
 let timers = [], typers = [];
 const clearAll = () => { timers.forEach(clearTimeout); typers.forEach(clearInterval); timers = []; typers = []; };
@@ -312,24 +502,22 @@ function typeInto(el, text, ms) {
   typers.push(iv);
 }
 function reveal() {
-  // the reveal is the original 3D page, untouched: hand it the answers
-  const p = new URLSearchParams({ n: ans.name, role: ans.role.replace(/^(a|an) /, ''), place: ans.place, feel: ans.feel });
+  // the reveal page uses n/role/place/feel; `a` carries every answer through and back
+  const f = finalAnswers();
+  const p = new URLSearchParams({ n: f.display_name, role: f.role, place: f.place, feel: f.feel, a: b64(f) });
   location.href = './reveal.html?' + p.toString();
 }
 // coming back from the reveal
 (() => {
   const Q = new URLSearchParams(location.search);
   if (!Q.has('role')) return;
-  ans.name = Q.get('n') || ''; $('nm').value = ans.name;
-  const r = Q.get('role'); ans.role = (/^[aeiou]/i.test(r) ? 'an ' : 'a ') + r;
-  ans.place = Q.get('place') || ans.place; ans.feel = Q.get('feel') || ans.feel;
+  try { loadAnswers(unb64(Q.get('a') || '')); }
+  catch { loadAnswers({ display_name: Q.get('n') || '', role: Q.get('role'), place: Q.get('place'), feel: Q.get('feel') }); }
   if (Q.has('home')) enterHome();
-  else if (Q.has('ask')) { show('ask'); setStep(1); }
+  else if (Q.has('ask')) { show('ask'); paint(); setStep(0); }
 })();
 
 // ================= accounts (Phase 1) =================
-function withArticle(r) { return /^(a|an) /.test(r) ? r : (/^[aeiou]/i.test(r) ? 'an ' : 'a ') + r; }
-function bare(r) { return r.replace(/^(a|an) /, ''); }
 
 async function enterHome() {
   fillHome(); show('home');
@@ -340,7 +528,7 @@ async function enterHome() {
 
 async function persist() {
   try {
-    await api.saveAnswers({ ...ans, role: bare(ans.role) });
+    await api.saveAnswers(finalAnswers());
     $('acct').hidden = false;
   } catch (e) {
     if (e.status === 401) openSignIn();
@@ -356,7 +544,7 @@ function openSignIn() {
   if (api.config.googleClientId) { $('si-google').hidden = false; api.googleButton($('si-google')).then(done, fail); }
   if (api.config.devLogin) {
     $('si-dev').hidden = false;
-    $('si-dev').onsubmit = (e) => { e.preventDefault(); api.devLogin($('si-email').value.trim(), ans.name).then(done, fail); };
+    $('si-dev').onsubmit = (e) => { e.preventDefault(); api.devLogin($('si-email').value.trim(), value(ALL_QS[0])).then(done, fail); };
   }
 }
 function closeSignIn() { const sheet = $('signin'); sheet.classList.remove('on'); setTimeout(() => { sheet.hidden = true; }, 400); }
@@ -368,8 +556,7 @@ $('signout').addEventListener('click', () => { api.signOut(); location.href = '.
   if (!api.apiEnabled || new URLSearchParams(location.search).has('role')) return;
   const me = await api.getMe().catch(() => null);
   if (!me || !me.answers) return;
-  ans.name = me.answers.display_name || me.user.name || '';
-  ans.role = withArticle(me.answers.role); ans.place = me.answers.place; ans.feel = me.answers.feel;
+  loadAnswers({ ...me.answers, dream: me.answers.dream_done ? me.answers : null });
   document.documentElement.classList.add('back');
   fillHome(); show('home'); $('acct').hidden = false;
 })();
@@ -378,10 +565,12 @@ function fillHome() {
   const d = new Date();
   $('today').textContent = d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
   const hr = d.getHours(); const part = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
-  $('hello').textContent = ans.name ? `${part}, ${ans.name}.` : `${part}.`;
-  const work = { 'a designer': 'designing', 'a founder': 'your idea', 'a doctor': 'your studies', 'an artist': 'making something', 'an engineer': 'building something' }[ans.role] || 'it';
+  const name = clean(ans.display_name);
+  $('hello').textContent = name ? `${part}, ${name}.` : `${part}.`;
+  const role = value(ALL_QS.find((q) => q.k === 'role'));
+  const work = { designer: 'designing', founder: 'your idea', doctor: 'your studies', artist: 'making something', engineer: 'building something', teacher: 'your lessons' }[role] || 'it';
   $('task').textContent = `Twenty minutes on ${work}. Nothing more.`;
-  $('sig').textContent = `— ${ans.name || 'you'}, 2031`;
+  $('sig').textContent = `— ${name || 'you'}, 2031`;
 }
 $('seeagain').addEventListener('click', reveal);
 let done = false;
