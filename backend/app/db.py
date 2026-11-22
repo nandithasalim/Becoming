@@ -16,13 +16,13 @@ def get_engine():
         _engine = create_engine(url, **kwargs)
     return _engine
 
-
+'''
 def init_db() -> None:
     # Phase 1 creates tables directly. Once the schema settles, switch to Alembic migrations.
     from . import models  # noqa: F401  (registers the tables)
 
     SQLModel.metadata.create_all(get_engine())
-
+'''
 
 def get_session() -> Iterator[Session]:
     with Session(get_engine()) as session:
