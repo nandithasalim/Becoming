@@ -8,19 +8,13 @@ from sqlmodel import Session, select
 
 from .auth import create_token, current_user, upsert_user, verify_google_token
 from .config import Settings, get_settings
-from .db import get_session, init_db
+from .db import get_session
 from .models import FutureSelf, User, now
 from . import questions as Q
 from .schemas import AnswersIn, AnswersOut, DevLogin, Dream, GoogleLogin, MeOut, TokenOut, UserOut
 
 
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    init_db()
-    yield
-
-
-app = FastAPI(title="Future Self API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Future Self API", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_settings().cors_list,

@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # Lets you log in with just an email while developing. Never enable in production.
     dev_login: bool = False
-    gemini_api_key: str 
+    gemini_api_key: str = ""
     llm_model: str = "gemini-flash-lite-latest"
     # Comma-separated list of front-end origins allowed to call the API.
     cors_origins: str = "http://localhost:8000,http://127.0.0.1:8000"

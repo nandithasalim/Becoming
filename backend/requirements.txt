@@ -7,3 +7,5 @@ pyjwt
 google-auth
 requests
 psycopg[binary]
+google-genai
+alembic
