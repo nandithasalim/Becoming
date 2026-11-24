@@ -2,6 +2,9 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
+import json
+from app.llm import FakeLLM
+from pydantic import ValidationError
 
 from app import auth, db, main
 from app.config import Settings, get_settings
@@ -14,7 +17,7 @@ def client(monkeypatch):
     from app import models  # noqa: F401
     SQLModel.metadata.create_all(engine)
 
-    settings = Settings(dev_login=True, google_client_id="test-client", jwt_secret="x" * 40)
+    settings = Settings(dev_login=True, google_client_id="test-client", jwt_secret="x" * 40, gemini_api_key="test")
     main.app.dependency_overrides[get_settings] = lambda: settings
     main.app.dependency_overrides[db.get_session] = lambda: (yield from _session(engine))
     with TestClient(main.app) as c:
@@ -203,3 +206,93 @@ def test_resaving_without_dream_keeps_the_dream(client):
     put(client, h, dream=DREAM)
     r = put(client, h, feel="free").json()
     assert r["dream_done"] is True and r["loved_as_kid"] == ["drawing", "music"]
+
+
+
+DRAFT = {
+    "story": (
+        "It's 2031. I wake up in Bangalore and open my laptop with coffee. I design tools people use "
+        "every day. I'm calm now, most days. The overthinking that used to fill my evenings is quiet. "
+        "It didn't change in one big moment. It changed in small, boring steps that you are about to start."
+    ),
+    "values": ["calm", "discipline", "courage"],
+    "habits": ["20 minutes of design practice", "A walk without your phone", "One honest journal line"],
+    "chapters": [
+        {"title": "The Decision", "goal": "Choose design and stop waiting to feel ready.", "first_step": "Pick one app to redesign.", "days": 7},
+        {"title": "The Practice", "goal": "Build a daily habit of small design work.", "first_step": "Design for 20 minutes tomorrow.", "days": 21},
+        {"title": "Being Seen", "goal": "Share your work and ask for feedback.", "first_step": "Post your first redesign.", "days": 14},
+    ],
+    "today_note": "You don't have to become me today. Just do one thing I would do.",
+}
+
+
+@pytest.fixture
+def fake(client):
+    """Swap the real Gemini for FakeLLM in every request."""
+    f = FakeLLM(reply=json.dumps(DRAFT))
+    main.app.dependency_overrides[main.get_llm] = lambda: f
+    return f
+
+
+def test_future_self_needs_answers(client, fake):
+    h = login(client)
+    assert client.post("/me/future-self", headers=h).status_code == 409
+    assert fake.calls == []                       # never asked the AI
+
+
+def test_future_self_is_created(client, fake):
+    h = login(client)
+    client.put("/me/answers", json=ANSWERS, headers=h)
+    r = client.post("/me/future-self", headers=h)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["story"] == DRAFT["story"]
+    assert len(body["chapters"]) == 3
+    assert body["prompt_version"] == "future_self_v1"
+    assert "answers_hash" not in body             # internal, never sent to the app
+    assert len(fake.calls) == 1
+
+
+def test_prompt_uses_the_users_own_answers(client, fake):
+    h = login(client)
+    client.put("/me/answers", json=ANSWERS, headers=h)
+    client.post("/me/future-self", headers=h)
+    prompt = fake.calls[0]["prompt"]
+    assert "<answers>" in prompt
+    for trait in ANSWERS["traits"]:
+        assert trait in prompt
+
+
+def test_same_answers_reuse_the_saved_profile(client, fake):
+    h = login(client)
+    client.put("/me/answers", json=ANSWERS, headers=h)
+    first = client.post("/me/future-self", headers=h).json()
+    second = client.post("/me/future-self", headers=h).json()
+    assert second == first
+    assert len(fake.calls) == 1                   # 2 requests, only 1 AI call
+
+
+def test_resaving_same_answers_still_reuses(client, fake):
+    h = login(client)
+    client.put("/me/answers", json=ANSWERS, headers=h)
+    client.post("/me/future-self", headers=h)
+    client.put("/me/answers", json=ANSWERS, headers=h)   # updated_at changes, answers don't
+    client.post("/me/future-self", headers=h)
+    assert len(fake.calls) == 1
+
+
+def test_changed_answers_make_a_new_profile(client, fake):
+    h = login(client)
+    client.put("/me/answers", json=ANSWERS, headers=h)
+    client.post("/me/future-self", headers=h)
+    client.put("/me/answers", json={**ANSWERS, "feel": "free"}, headers=h)
+    client.post("/me/future-self", headers=h)
+    assert len(fake.calls) == 2
+
+
+def test_bad_ai_reply_is_rejected(client, fake):
+    h = login(client)
+    client.put("/me/answers", json=ANSWERS, headers=h)
+    fake.reply = json.dumps({**DRAFT, "chapters": DRAFT["chapters"][:2]})   # only 2 chapters
+    with pytest.raises(ValidationError):
+        client.post("/me/future-self", headers=h)

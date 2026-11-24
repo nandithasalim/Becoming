@@ -1,18 +1,25 @@
-"""Future Self API — Phase 1: accounts and onboarding answers."""
-from contextlib import asynccontextmanager
+"""Future Self API: accounts, onboarding answers, and the AI future-self profile."""
+import hashlib
+import json
+from functools import lru_cache
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from sqlmodel import Session, select
 
+from . import questions as Q
+from .ai_schemas import FutureSelfDraft
 from .auth import create_token, current_user, upsert_user, verify_google_token
 from .config import Settings, get_settings
 from .db import get_session
-from .models import FutureSelf, User, now
-from . import questions as Q
-from .schemas import AnswersIn, AnswersOut, DevLogin, Dream, GoogleLogin, MeOut, TokenOut, UserOut
-
+from .llm import LLM
+from .models import FutureSelf, FutureSelfProfile, User, now
+from .prompts.future_self import PROMPT_VERSION, system_prompt, user_prompt
+from .schemas import (
+    AnswersIn, AnswersOut, DevLogin, Dream, FutureSelfProfileOut,
+    GoogleLogin, MeOut, TokenOut, UserOut,
+)
 
 app = FastAPI(title="Future Self API", version="0.1.0")
 app.add_middleware(
@@ -133,3 +140,62 @@ def save_dream(body: Dream, user: User = Depends(current_user), session: Session
     session.commit()
     session.refresh(fs)
     return answers_out(fs)
+
+@lru_cache
+def get_llm() -> LLM:
+    """One LLM for the whole app. Tests swap it for FakeLLM."""
+    return LLM()
+
+
+def answers_hash(answers: dict) -> str:
+    """A fingerprint of the answers + prompt version."""
+    text = json.dumps(answers, sort_keys=True, ensure_ascii=False) + "|" + PROMPT_VERSION
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+@app.post("/me/future-self", response_model=FutureSelfProfileOut)
+async def make_future_self(
+    user: User = Depends(current_user),
+    session: Session = Depends(get_session),
+    llm: LLM = Depends(get_llm),
+):
+    """Create the future-self profile, or reuse the saved one if the answers haven't changed."""
+    fs = find_future_self(session, user)
+    if fs is None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Answer the questions first")
+
+    # Only the real answers: no timestamps
+    answers = answers_out(fs).model_dump(exclude={"dream_done", "updated_at"})
+    h = answers_hash(answers)
+
+    profile = session.exec(
+        select(FutureSelfProfile).where(FutureSelfProfile.user_id == user.id)
+    ).first()
+
+    if profile is not None and profile.answers_hash == h:
+        return FutureSelfProfileOut.model_validate(profile, from_attributes=True)   # cache hit: free
+
+    draft = await llm.generate_json(
+        system=system_prompt(),
+        prompt=user_prompt(answers),
+        schema=FutureSelfDraft,
+        temperature=0.8,
+        max_tokens=2000,
+    )
+    data = draft.model_dump()   # chapters become plain dicts, ready for the JSON column
+
+    if profile is None:
+        profile = FutureSelfProfile(user_id=user.id, **data,
+                                    prompt_version=PROMPT_VERSION, model=llm.model, answers_hash=h)
+    else:
+        for k, v in data.items():
+            setattr(profile, k, v)
+        profile.prompt_version = PROMPT_VERSION
+        profile.model = llm.model
+        profile.answers_hash = h
+        profile.updated_at = now()
+
+    session.add(profile)
+    session.commit()
+    session.refresh(profile)
+    return FutureSelfProfileOut.model_validate(profile, from_attributes=True)

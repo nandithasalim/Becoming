@@ -75,6 +75,7 @@ class FakeLLM:
     def __init__(self, reply: str = "Fake reply from the future."):
         self.reply = reply      # for generate_json, give a JSON string here
         self.calls = []
+        self.model = "fake"
 
     async def generate_text(self, system: str, prompt: str, temperature: float, max_tokens: int) -> str:
         self.calls.append({"system": system, "prompt": prompt,

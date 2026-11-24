@@ -6,7 +6,7 @@ from typing import Annotated
 from pydantic import AfterValidator, BaseModel, EmailStr, Field, field_validator
 
 from . import questions as Q
-
+from .ai_schemas import FutureSelfDraft
 
 # ---------- answer rules ----------
 
@@ -128,3 +128,8 @@ class TokenOut(BaseModel):
 class MeOut(BaseModel):
     user: UserOut
     answers: AnswersOut | None
+
+class FutureSelfProfileOut(FutureSelfDraft):
+    """The draft's 5 fields + when and how it was made."""
+    prompt_version: str
+    updated_at: datetime
