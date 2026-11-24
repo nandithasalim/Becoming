@@ -57,3 +57,26 @@ class FutureSelf(SQLModel, table=True):
 
     created_at: datetime = Field(default_factory=now)
     updated_at: datetime = Field(default_factory=now)
+
+class FutureSelfProfile(SQLModel, table=True):
+    """What Gemini wrote about a user's future self (one per user)."""
+
+    __tablename__ = "future_self_profiles"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="users.id", index=True, unique=True)
+
+    # What Gemini wrote (same fields as FutureSelfDraft)
+    story: str
+    values: list[str] = Field(default_factory=list, sa_column=Column(JSON, nullable=False))
+    habits: list[str] = Field(default_factory=list, sa_column=Column(JSON, nullable=False))
+    chapters: list[dict] = Field(default_factory=list, sa_column=Column(JSON, nullable=False))
+    today_note: str
+
+    # The receipt: how it was made
+    prompt_version: str
+    model: str
+    answers_hash: str = Field(max_length=64, index=True)
+
+    created_at: datetime = Field(default_factory=now)
+    updated_at: datetime = Field(default_factory=now)
